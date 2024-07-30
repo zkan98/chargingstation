@@ -3,7 +3,6 @@ package elice.chargingstationbackend.maps.controller;
 
 import elice.chargingstationbackend.maps.mapsDto.ChargeStationDTO;
 import elice.chargingstationbackend.maps.mapsDto.CoordinateDTO;
-import elice.chargingstationbackend.maps.mapsDto.MapDto;
 import elice.chargingstationbackend.maps.service.MapService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +28,9 @@ public class MapController {
 
         double lat = coordinateDTO.getLat();
         double lng = coordinateDTO.getLng();
+        double distance = coordinateDTO.getDistance();
 
-        List<ChargeStationDTO> chargeStationDTOList =  mapService.
+        List<ChargeStationDTO> chargeStationDTOList =  mapService.getChargeStationsWithinDistance(lat, lng, distance);
 
         return ResponseEntity.ok(chargeStationDTOList);
     }

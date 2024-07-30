@@ -1,17 +1,18 @@
 package elice.chargingstationbackend.maps.Entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table
+@Table(name = "ChargeStationAPI", indexes = {
+        @Index(name = "idx_lat_lng", columnList = "lat, lng")
+})
 @NoArgsConstructor
+@AllArgsConstructor
 public class ChargeStationAPI {
     @Id
     @Column(name = "chargestationId", columnDefinition = "bigint(20)")
