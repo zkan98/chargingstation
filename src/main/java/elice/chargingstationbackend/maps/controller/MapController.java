@@ -6,15 +6,12 @@ import elice.chargingstationbackend.maps.mapsDto.CoordinateDTO;
 import elice.chargingstationbackend.maps.service.MapService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/charge-stations")
 public class MapController {
     private final MapService mapService;
 
@@ -23,7 +20,20 @@ public class MapController {
         this.mapService = mapService;
     }
 
-    @PostMapping("/coordinate")
+    @GetMapping("/api")
+    public ResponseEntity<String> getChargerInfoByApi(@RequestParam int pageNo, @RequestParam int numOfRows,
+                                                      @RequestParam String zcode){
+        try {
+            String response = mapService.getChargestationApi(pageNo, numOfRows, zcode);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error occurred: " + e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/getChargerInfo")
     public ResponseEntity<List<ChargeStationDTO>> findChargestation(@RequestBody CoordinateDTO coordinateDTO){
 
         double lat = coordinateDTO.getLat();

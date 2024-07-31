@@ -1,10 +1,12 @@
 package elice.chargingstationbackend.maps.mapsDto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ChargeStationDTO {
     private String statNm;
     private String chgerType;
@@ -17,4 +19,6 @@ public class ChargeStationDTO {
     private String powerType;
     private String parkingFree;
     private String note;
+    private double distance;
 }
+
