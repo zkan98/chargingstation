@@ -26,8 +26,8 @@ public class BusinessOwner {
     private String ownerEmail;
 
     @NotBlank
-    @Size(max = 255)
-    @Column(length = 255, nullable = false)
+    @Size(max = 60)
+    @Column(length = 60, nullable = false)
     private String ownerPassword;
 
     @NotBlank
@@ -43,13 +43,12 @@ public class BusinessOwner {
 //    @OneToMany(mappedBy = "businessOwner")
 //    private Set<ChargingStation> chargingStations;
 
-    public void updateDetails(String ownerName, String ownerEmail, String ownerPassword, String businessName, String contactInfo) {
-        this.ownerName = ownerName;
-        this.ownerEmail = ownerEmail;
-        this.ownerPassword = ownerPassword;
-        this.businessName = businessName;
-        this.contactInfo = contactInfo;
+    public void updateDetails(BusinessOwner businessOwnerDetails) {
+        this.ownerName = businessOwnerDetails.getOwnerName();
+        this.ownerEmail = businessOwnerDetails.getOwnerEmail();
+        this.ownerPassword = businessOwnerDetails.getOwnerPassword();
+        this.businessName = businessOwnerDetails.getBusinessName();
+        this.contactInfo = businessOwnerDetails.getContactInfo();
     }
-
 
 }
