@@ -21,10 +21,10 @@ public class Charger {
     // @JoinColumn(name = "owner_id")
     // private Owner owner;
 
-    @Column
+    @Column(nullable = false)
     private String chargerName;
 
-    @Column
+    @Column(nullable = false)
     private String address;
 
     @Column

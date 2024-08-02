@@ -1,6 +1,8 @@
 package elice.chargingstationbackend.charger.service;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.List;
 
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
@@ -21,10 +23,23 @@ public class ChargerService {
     private final ChargerRepository chargerRepository;
 
     // 주변 충전소 리스트 자동 조회
-    // public Page<ChargerListResponseDTO> getNearbyChargerList(Double latitute, Double longitute) {
+    // public Page<ChargerListResponseDTO> getNearbyChargerList(Double latitude, Double longitude,
+    //                                                         String connectorOption, String speedOption,
+    //                                                         String feeOption, String bnameOption, 
+    //                                                         String chargable) {
     //     chargerRepository.findAll();
-
     // }
+    
+    // 충전소 검색(충전소 이름, 장소)
+    public List<ChargerListResponseDTO> searchCharger(String searchTerm) {
+        List<Charger> resultsList = chargerRepository.searchByChargerNameOrAddress(searchTerm);
+
+        List<ChargerListResponseDTO> responseDTOList = resultsList.stream()
+        .map(ChargerListResponseDTO::new)
+        .collect(Collectors.toList());
+
+        return responseDTOList;
+    }
 
     // 충전소 세부 조회
     public ChargerDetailResponseDTO getChagerDetail(Long chargerId) {

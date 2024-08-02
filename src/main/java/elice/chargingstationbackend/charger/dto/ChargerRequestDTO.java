@@ -17,8 +17,8 @@ public class ChargerRequestDTO {
     private double chargingFee;
     private String connectorType;
     private int parkingFee;
-    private Double latitude;
-    private Double longitude;
+    private double latitude;
+    private double longitude;
 
     public Charger toEntity() {
         Charger charger = Charger.builder()
