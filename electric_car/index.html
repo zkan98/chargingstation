@@ -9,10 +9,33 @@
   <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId="></script>
   <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=&submodules=geocoder"></script>
   <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=&submodules=panorama"></script>
+  <title>Map Example</title>
+  <style>
+    #address-form {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: white;
+      padding: 10px;
+      border: 1px solid #ccc;
+      z-index: 1000;
+    }
+  </style>
 </head>
 
 <body>
+<div id="address-form">
+  <label for="name">도로명 주소 입력:</label>
+    <input type="search"
+          id="name"
+          name="name"
+          minlength="2"
+          required
+          size="10" />
+    <button id="submit">검색</button>
+  </div>
   <div id="map" style="width:100%;height:700px;"></div>
+
 <script>
   var position = new naver.maps.LatLng(37.3595704, 127.105399);
 
@@ -31,19 +54,15 @@
     searchCoordinateToAddress(e.coord);
   });
 
-
-
   var infoWindow = new naver.maps.InfoWindow({
     anchorSkew: true
   });
 
   function searchCoordinateToAddress(latlng) {
-
     infoWindow.close();
-
     console.log(latlng);
 
-    // 서버로 latlng 값을 전송하는 부분
+    /* 위도, 경도를 주소로 변환시켜서 controller에 전달하는 기능
     fetch('/api/coordinate', {
       method: 'POST',
       headers: {
@@ -57,7 +76,7 @@
             })
             .catch((error) => {
               console.error('Error:', error);
-            });
+            });*/
 
     naver.maps.Service.reverseGeocode({
       coords: latlng,
@@ -66,18 +85,16 @@
         naver.maps.Service.OrderType.ROAD_ADDR
       ].join(',')
     }, function(status, response) {
-
-
       var items = response.v2.results,
               address = '',
               htmlAddresses = [];
 
-      for (var i=0, ii=items.length, item, addrType; i<ii; i++) {
+      for (var i = 0, ii = items.length, item, addrType; i < ii; i++) {
         item = items[i];
         address = makeAddress(item) || '';
         addrType = item.name === 'roadaddr' ? '[도로명 주소]' : '[지번 주소]';
 
-        htmlAddresses.push((i+1) +'. '+ addrType +' '+ address);
+        htmlAddresses.push((i + 1) + '. ' + addrType + ' ' + address);
       }
 
       infoWindow.setContent([
@@ -92,42 +109,48 @@
   }
 
   function searchAddressToCoordinate(address) {
-    naver.maps.Service.geocode({
-      query: address
-    }, function(status, response) {
-      if (status === naver.maps.Service.Status.ERROR) {
-        return alert('Something Wrong!');
-      }
+    return new Promise((resolve, reject) => {
+      naver.maps.Service.geocode({
+        query: address
+      }, function(status, response) {
+        if (status === naver.maps.Service.Status.ERROR) {
+          alert('Something Wrong!');
+          return reject('Geocode Error');
+        }
 
-      if (response.v2.meta.totalCount === 0) {
-        return alert('totalCount' + response.v2.meta.totalCount);
-      }
+        if (response.v2.meta.totalCount === 0) {
+          alert('totalCount ' + response.v2.meta.totalCount);
+          return reject('No results found');
+        }
 
-      var htmlAddresses = [],
-              item = response.v2.addresses[0],
-              point = new naver.maps.Point(item.x, item.y);
+        var htmlAddresses = [],
+                item = response.v2.addresses[0],
+                point = new naver.maps.Point(item.x, item.y);
 
-      if (item.roadAddress) {
-        htmlAddresses.push('[도로명 주소] ' + item.roadAddress);
-      }
+        if (item.roadAddress) {
+          htmlAddresses.push('[도로명 주소] ' + item.roadAddress);
+        }
 
-      if (item.jibunAddress) {
-        htmlAddresses.push('[지번 주소] ' + item.jibunAddress);
-      }
+        if (item.jibunAddress) {
+          htmlAddresses.push('[지번 주소] ' + item.jibunAddress);
+        }
 
-      if (item.englishAddress) {
-        htmlAddresses.push('[영문명 주소] ' + item.englishAddress);
-      }
+        if (item.englishAddress) {
+          htmlAddresses.push('[영문명 주소] ' + item.englishAddress);
+        }
 
-      infoWindow.setContent([
-        '<div style="padding:10px;min-width:200px;line-height:150%;">',
-        '<h4 style="margin-top:5px;">검색 주소 : '+ address +'</h4><br />',
-        htmlAddresses.join('<br />'),
-        '</div>'
-      ].join('\n'));
+        infoWindow.setContent([
+          '<div style="padding:10px;min-width:200px;line-height:150%;">',
+          '<h4 style="margin-top:5px;">검색 주소 : ' + address + '</h4><br />',
+          htmlAddresses.join('<br />'),
+          '</div>'
+        ].join('\n'));
 
-      map.setCenter(point);
-      infoWindow.open(map, point);
+        map.setCenter(point);
+        infoWindow.open(map, point);
+
+        resolve({ address: htmlAddresses, point: point, lat: point.y, lng: point.x });
+      });
     });
   }
 
@@ -136,21 +159,24 @@
       searchCoordinateToAddress(e.coord);
     });
 
-    $('#address').on('keydown', function(e) {
-      var keyCode = e.which;
-
-      if (keyCode === 13) { // Enter Key
-        searchAddressToCoordinate($('#address').val());
-      }
-    });
-
-    $('#submit').on('click', function(e) {
+    document.getElementById('submit').addEventListener('click', function(e) {
       e.preventDefault();
-
-      searchAddressToCoordinate($('#address').val());
+      const address = document.getElementById('name').value;
+      searchAddressToCoordinate(address)
+              .then(result => {
+                console.log('Result:', result);
+                return fetch('http://localhost:8080/api/charge-stations/getChargerInfo', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ lat: result.lat, lng: result.lng })
+                });
+              })
+              .then(response => response.json())
+              .then(data => console.log('Success:', data))
+              .catch(error => console.error('Error:', error));
     });
-
-    searchAddressToCoordinate('정자동 178-1');
   }
 
   function makeAddress(item) {
@@ -219,16 +245,15 @@
     return !!(data && data !== '');
   }
 
-  function checkLastString (word, lastString) {
+  function checkLastString(word, lastString) {
     return new RegExp(lastString + '$').test(word);
   }
 
-  function hasAddition (addition) {
+  function hasAddition(addition) {
     return !!(addition && addition.value);
   }
 
   naver.maps.onJSContentLoaded = initGeocoder;
-
 </script>
 </body>
 </html>
