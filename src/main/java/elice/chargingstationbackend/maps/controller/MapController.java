@@ -27,7 +27,7 @@ public class MapController {
 
         double lat = coordinateDTO.getLat();
         double lng = coordinateDTO.getLng();
-        double distance = 10.0; //distance는 차후 수정
+        double distance = 10.0; //10km
 
         List<ChargeStationDTO> chargeStationDTOList =  mapService.getChargeStationsWithinDistance(lat, lng, distance);
 
