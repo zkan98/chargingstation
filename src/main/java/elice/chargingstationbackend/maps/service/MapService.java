@@ -127,23 +127,6 @@ public class MapService {
 
         // response가 null일 경우 DB에서 조회
         List<ChargeStationAPI> chargeStations = chargeStationRepository.findWithinApproximateRange(minLat, maxLat, minLng, maxLng);
-        for (ChargeStationAPI station : chargeStations) {
-            System.out.println(
-                    "ChargeStationAPI{" +
-                            "chargestationId=" + station.getChargestationId() +
-                            ", statNm='" + station.getStatNm() + '\'' +
-                            ", chgerType='" + station.getChgerType() + '\'' +
-                            ", addr='" + station.getAddr() + '\'' +
-                            ", lat=" + station.getLat() +
-                            ", lng=" + station.getLng() +
-                            ", useTime='" + station.getUseTime() + '\'' +
-                            ", busiCall='" + station.getBusiCall() + '\'' +
-                            ", stat=" + station.getStat() +
-                            ", parkingFree='" + station.getParkingFree() + '\'' +
-                            ", limitYn='" + station.getLimitYn() + '\'' +
-                            '}'
-            );
-        }
 
         return chargeStations.stream()
                 .map(station -> {
