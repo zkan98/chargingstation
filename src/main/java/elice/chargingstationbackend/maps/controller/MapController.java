@@ -1,17 +1,18 @@
 package elice.chargingstationbackend.maps.controller;
 
 
-import elice.chargingstationbackend.maps.mapsDto.ChargeStationDTO;
-import elice.chargingstationbackend.maps.mapsDto.CoordinateDTO;
+import elice.chargingstationbackend.maps.DTO.ChargeStationDTO;
+import elice.chargingstationbackend.maps.DTO.CoordinateDTO;
 import elice.chargingstationbackend.maps.service.MapService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/charge-stations")
+@RequestMapping("/api/charge-stations")
 public class MapController {
     private final MapService mapService;
 
@@ -20,25 +21,14 @@ public class MapController {
         this.mapService = mapService;
     }
 
-    @GetMapping("/api")
-    public ResponseEntity<String> getChargerInfoByApi(@RequestParam int pageNo, @RequestParam int numOfRows,
-                                                      @RequestParam String zcode){
-        try {
-            String response = mapService.getChargestationApi(pageNo, numOfRows, zcode);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Error occurred: " + e.getMessage());
-        }
-    }
-
-
+    //지역구분코드(zcode)를 클라이언트 쪽에서 도로명을 통해 번호로 바꾸기.
     @PostMapping("/getChargerInfo")
-    public ResponseEntity<List<ChargeStationDTO>> findChargestation(@RequestBody CoordinateDTO coordinateDTO){
+    public ResponseEntity<List<ChargeStationDTO>> findChargestation(@RequestBody CoordinateDTO coordinateDTO) throws IOException {
 
         double lat = coordinateDTO.getLat();
         double lng = coordinateDTO.getLng();
-        double distance = coordinateDTO.getDistance();
+        double distance = 55.0;
+        String zcode = coordinateDTO.getZcode();
 
         List<ChargeStationDTO> chargeStationDTOList =  mapService.getChargeStationsWithinDistance(lat, lng, distance);
 

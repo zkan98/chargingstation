@@ -1,4 +1,4 @@
-package elice.chargingstationbackend.maps.mapsDto;
+package elice.chargingstationbackend.maps.DTO;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -8,5 +8,5 @@ import lombok.Setter;
 public class CoordinateDTO {
     private double lat;
     private double lng;
-    private double distance = 5.0;
+    private String zcode;
 }
