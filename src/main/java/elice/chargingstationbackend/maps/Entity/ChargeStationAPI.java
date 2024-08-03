@@ -8,9 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "ChargeStationAPI", indexes = {
-        @Index(name = "idx_lat_lng", columnList = "lat, lng")
-})
+@Table(name = "ChargeStationAPI")
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChargeStationAPI {
@@ -43,25 +41,15 @@ public class ChargeStationAPI {
     @Column(name = "stat", columnDefinition="INT")
     private Integer stat;
 
-    @Column(name = "powerType", columnDefinition="VARCHAR(255)")
-    private String powerType;
-
     @Column(name = "parkingFree", columnDefinition="VARCHAR(1)")
     private String parkingFree;
-
-    @Column(name = "note", columnDefinition="VARCHAR(255)")
-    private String note;
 
     @Column(name = "limitYn", columnDefinition="VARCHAR(1)")
     private String limitYn;
 
-    @Column(name = "limitDetail", columnDefinition="VARCHAR(255)")
-    private String limitDetail;
-
     @Builder
     public ChargeStationAPI(String statNm, String chgerType, String addr, double lat, double lng, String useTime,
-                            String busiCall, Integer stat, String powerType, String parkingFree, String note, String limitYn,
-                            String limitDetail){
+                            String busiCall, Integer stat, String parkingFree, String limitYn){
         this.statNm = statNm;
         this.chgerType = chgerType;
         this.addr = addr;
@@ -70,10 +58,8 @@ public class ChargeStationAPI {
         this.useTime = useTime;
         this.busiCall = busiCall;
         this.stat = stat;
-        this.powerType = powerType;
         this.parkingFree = parkingFree;
-        this.note = note;
         this.limitYn = limitYn;
-        this.limitDetail = limitDetail;
     }
+
 }

@@ -8,5 +8,4 @@ import lombok.Setter;
 public class CoordinateDTO {
     private double lat;
     private double lng;
-    private String zcode;
 }

@@ -17,12 +17,9 @@ public class ChargeStationDTO {
     private String useTime;
     private String busiCall;
     private Integer stat;
-    private String powerType;
     private String parkingFree;
-    private String note;
     private double distance;
     private String limitYn;
-    private String limitDetail;
 
     public ChargeStationAPI DtoToEntity(ChargeStationDTO chargeStationDTO){
         return ChargeStationAPI.builder()
@@ -34,9 +31,8 @@ public class ChargeStationDTO {
                 .useTime(chargeStationDTO.getUseTime())
                 .busiCall(chargeStationDTO.getBusiCall())
                 .stat(chargeStationDTO.getStat())
-                .powerType(chargeStationDTO.getPowerType()).parkingFree(chargeStationDTO.getParkingFree())
-                .note(chargeStationDTO.getNote())
-                .limitYn(chargeStationDTO.getLimitYn()).limitDetail(chargeStationDTO.getLimitDetail())
+                .parkingFree(chargeStationDTO.getParkingFree())
+                .limitYn(chargeStationDTO.getLimitYn())
                 .build();
     }
 }
