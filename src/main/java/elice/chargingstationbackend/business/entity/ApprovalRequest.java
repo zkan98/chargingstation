@@ -27,9 +27,9 @@ public class ApprovalRequest {
 
     private LocalDateTime timestamp;
 
-    private String businessCertificate;
+    private String businessCertificatePath;
 
-    private String identityProof;
+    private String identityProofPath;
 
 
     public void updateApprovalRequest(BusinessOwner businessOwner, String requestType, String status, LocalDateTime timestamp,
@@ -38,8 +38,8 @@ public class ApprovalRequest {
         this.requestType = requestType;
         this.status = status;
         this.timestamp = timestamp;
-        this.businessCertificate = businessCertificate;
-        this.identityProof = identityProof;
+        this.businessCertificatePath = businessCertificate;
+        this.identityProofPath = identityProof;
     }
     public void setStatus(String status) {
         this.status = status;

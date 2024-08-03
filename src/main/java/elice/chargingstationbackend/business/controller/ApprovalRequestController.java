@@ -2,17 +2,12 @@ package elice.chargingstationbackend.business.controller;
 
 import elice.chargingstationbackend.business.entity.ApprovalRequest;
 import elice.chargingstationbackend.business.service.ApprovalRequestService;
+import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/approval-requests")
@@ -21,12 +16,12 @@ public class ApprovalRequestController {
 
     private final ApprovalRequestService approvalRequestService;
 
-    @PostMapping("/{ownerId}")
+    @PostMapping
     public ResponseEntity<ApprovalRequest> createApprovalRequest(
-        @PathVariable Long ownerId, @RequestBody Map<String, String> requestBody) {
-        String requestType = requestBody.get("requestType");
-        String businessCertificate = requestBody.get("businessCertificate");
-        String identityProof = requestBody.get("identityProof");
+        @RequestParam Long ownerId,
+        @RequestParam String requestType,
+        @RequestParam("businessCertificate") MultipartFile businessCertificate,
+        @RequestParam("identityProof") MultipartFile identityProof) throws IOException {
 
         ApprovalRequest approvalRequest = approvalRequestService.createApprovalRequest(
             ownerId, requestType, businessCertificate, identityProof
