@@ -14,15 +14,15 @@ public class ChargerListResponseDTO {
     private String chargerName;
     private String address;
     private String connectorType;
-    private double chargingSpeed;
-    private double chargingFee;
+    private Double chargingSpeed;
+    private Double chargingFee;
     private int parkingFee;
     private int slots;
     private int availableSlots;
 
     public ChargerListResponseDTO(Charger charger) {
         this.chargerId = charger.getId();
-        // this.businessName = charger.getOwner().getBusinessName();
+        // this.businessName = charger.getbBusinessOwner().getBusinessName();
         this.chargerName = charger.getChargerName();
         this.address = charger.getAddress();
         this.connectorType = charger.getConnectorType();

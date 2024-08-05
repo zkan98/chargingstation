@@ -19,7 +19,7 @@ public class Charger {
 
     // @ManyToOne(fetch = FetchType.LAZY)
     // @JoinColumn(name = "owner_id")
-    // private Owner owner;
+    // private BusinessOwner businessOwner;
 
     @Column(nullable = false)
     private String chargerName;

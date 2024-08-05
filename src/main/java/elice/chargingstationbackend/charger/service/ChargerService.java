@@ -7,9 +7,12 @@ import java.util.List;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import elice.chargingstationbackend.charger.dto.ChargerDetailResponseDTO;
+import elice.chargingstationbackend.charger.dto.ChargerFilterResponseDTO;
 import elice.chargingstationbackend.charger.dto.ChargerListResponseDTO;
 import elice.chargingstationbackend.charger.dto.ChargerRequestDTO;
 import elice.chargingstationbackend.charger.entity.Charger;
@@ -22,13 +25,31 @@ import lombok.RequiredArgsConstructor;
 public class ChargerService {
     private final ChargerRepository chargerRepository;
 
-    // 주변 충전소 리스트 자동 조회
-    // public Page<ChargerListResponseDTO> getNearbyChargerList(Double latitude, Double longitude,
-    //                                                         String connectorOption, String speedOption,
-    //                                                         String feeOption, String bnameOption, 
-    //                                                         String chargable) {
-    //     chargerRepository.findAll();
-    // }
+    // 주변 충전소 리스트 자동 조회( + 필터)
+    public Page<ChargerListResponseDTO> getNearbyChargerList(
+            Double userLatitude, 
+            Double userLongitude, 
+            String connectorOption, 
+            String speedOption, 
+            String feeOption, 
+            String bnameOption, 
+            String chargable) {
+
+        Pageable pageable = PageRequest.of(0, 10);
+            
+        // 데이터베이스에서 주변 충전소를 검색
+        Page<Charger> chargers = chargerRepository.findChargers(
+                userLatitude, 
+                userLongitude, 
+                connectorOption, 
+                speedOption, 
+                feeOption, 
+                bnameOption, 
+                chargable,
+                pageable);
+        
+                return chargers.map(ChargerListResponseDTO::new);
+    }
     
     // 충전소 검색(충전소 이름, 장소)
     public List<ChargerListResponseDTO> searchCharger(String searchTerm) {

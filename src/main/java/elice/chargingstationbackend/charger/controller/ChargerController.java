@@ -2,9 +2,7 @@ package elice.chargingstationbackend.charger.controller;
 
 import java.util.List; 
 
-import org.hibernate.engine.transaction.jta.platform.internal.ResinJtaPlatform;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,9 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import elice.chargingstationbackend.charger.dto.ChargerDetailResponseDTO;
+import elice.chargingstationbackend.charger.dto.LocationDTO;
 import elice.chargingstationbackend.charger.dto.ChargerListResponseDTO;
 import elice.chargingstationbackend.charger.dto.ChargerRequestDTO;
-import elice.chargingstationbackend.charger.entity.Charger;
 import elice.chargingstationbackend.charger.service.ChargerService;
 import lombok.RequiredArgsConstructor;
 
@@ -30,19 +28,25 @@ import lombok.RequiredArgsConstructor;
 public class ChargerController {
     
     private final ChargerService chargerService;
-
-    // 주변 충전소 리스트 자동 조회( + 필터 )
-    // @GetMapping("/list")
-    // public ResponseEntity<Page<ChargerListResponseDTO>> getNearbyChargerList(@RequestParam(required = false) String connectorOption,
-    //                                                                         @RequestParam(required = false) String speedOption,
-    //                                                                         @RequestParam(required = false) String feeOption,
-    //                                                                         @RequestParam(required = false) String bnameOption,
-    //                                                                         @RequestParam(required = false) String chargable,
-    //                                                                         @RequestBody Double latitude, @RequestBody Double longitude) {
-    //     Page<ChargerListResponseDTO> nearByChargerPage = chargerService.getNearbyChargerList(latitude, longitude, connectorOption, speedOption, feeOption, bnameOption, chargable);
-    //     return ResponseEntity.ok().body(d);
-    // }
     
+    // 주변 충전소 리스트 자동 조회( + 필터 )
+    @PostMapping("/list")
+    public ResponseEntity<Page<ChargerListResponseDTO>> getNearbyChargerList(
+            @RequestBody LocationDTO location,
+            @RequestParam(required = false) String connectorOption,
+            @RequestParam(required = false) String speedOption,
+            @RequestParam(required = false) String feeOption,
+            @RequestParam(required = false) String bnameOption,
+            @RequestParam(required = false) String chargable) {
+
+        Double userLatitude = location.getUserLatitude();
+        Double userLongitude = location.getUserLongitude();
+
+        Page<ChargerListResponseDTO> nearByChargerPage = chargerService.getNearbyChargerList(
+                userLatitude, userLongitude, connectorOption, speedOption, feeOption, bnameOption, chargable);
+        return ResponseEntity.ok().body(nearByChargerPage);
+    }
+
     // 충전소 검색(충전소 이름, 주소)
     @GetMapping("/search")
     public ResponseEntity<List<ChargerListResponseDTO>> searchCharger(@RequestParam String searchTerm) {

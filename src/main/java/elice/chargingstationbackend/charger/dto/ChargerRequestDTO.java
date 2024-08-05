@@ -13,12 +13,12 @@ public class ChargerRequestDTO {
     private String chargerName;
     private String address;
     private int slots;
-    private double chargingSpeed;
-    private double chargingFee;
+    private Double chargingSpeed;
+    private Double chargingFee;
     private String connectorType;
     private int parkingFee;
-    private double latitude;
-    private double longitude;
+    private Double latitude;
+    private Double longitude;
 
     public Charger toEntity() {
         Charger charger = Charger.builder()
