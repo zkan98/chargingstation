@@ -25,30 +25,13 @@ import lombok.RequiredArgsConstructor;
 public class ChargerService {
     private final ChargerRepository chargerRepository;
 
-    // 주변 충전소 리스트 자동 조회( + 필터)
-    public Page<ChargerListResponseDTO> getNearbyChargerList(
-            Double userLatitude, 
-            Double userLongitude, 
-            String connectorOption, 
-            String speedOption, 
-            String feeOption, 
-            String bnameOption, 
-            String chargable) {
+    // 주변 충전소 리스트 자동 조회
+    public List<ChargerListResponseDTO> getNearbyChargerList(Double userLatitude, Double userLongitude) {
+        List<Charger> nearByChargerList = chargerRepository.findCharger(userLatitude, userLongitude);
 
-        Pageable pageable = PageRequest.of(0, 10);
-            
-        // 데이터베이스에서 주변 충전소를 검색
-        Page<Charger> chargers = chargerRepository.findChargers(
-                userLatitude, 
-                userLongitude, 
-                connectorOption, 
-                speedOption, 
-                feeOption, 
-                bnameOption, 
-                chargable,
-                pageable);
-        
-                return chargers.map(ChargerListResponseDTO::new);
+        return nearByChargerList.stream()
+                                .map(ChargerListResponseDTO::new)
+                                .collect(Collectors.toList());
     }
     
     // 충전소 검색(충전소 이름, 장소)
