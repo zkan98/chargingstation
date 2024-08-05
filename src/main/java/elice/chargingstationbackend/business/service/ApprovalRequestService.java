@@ -4,6 +4,7 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import elice.chargingstationbackend.business.entity.ApprovalRequest;
+import elice.chargingstationbackend.business.entity.ApprovalStatus;
 import elice.chargingstationbackend.business.entity.BusinessOwner;
 import elice.chargingstationbackend.business.exception.BusinessOwnerNotFoundException;
 import elice.chargingstationbackend.business.exception.RequestNotFoundException;
@@ -19,6 +20,11 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 public class ApprovalRequestService {
+
+    private static final String REQUEST_APPROVE_SUBJECT = "승인 요청 승인";
+    private static final String REQUEST_APPROVE_TEXT = "귀하의 승인 요청이 승인되었습니다.";
+    private static final String REQUEST_REJECT_SUBJECT = "승인 요청 거부";
+    private static final String REQUEST_REJECT_TEXT = "귀하의 승인 요청이 거부되었습니다.";
 
     private final ApprovalRequestRepository approvalRequestRepository;
     private final BusinessOwnerRepository businessOwnerRepository;
@@ -38,7 +44,7 @@ public class ApprovalRequestService {
 
         ApprovalRequest approvalRequest = new ApprovalRequest();
         approvalRequest.updateApprovalRequest(
-            businessOwner, requestType, "Pending", LocalDateTime.now(),
+            businessOwner, requestType, ApprovalStatus.PENDING, LocalDateTime.now(),
             businessCertificatePath, identityProofPath
         );
 
@@ -77,7 +83,7 @@ public class ApprovalRequestService {
         ApprovalRequest request = approvalRequestRepository.findById(requestId)
             .orElseThrow(() -> new RequestNotFoundException(requestId));
 
-        request.setStatus("Approved");
+        request.setStatus(ApprovalStatus.APPROVED);
         ApprovalRequest approvedRequest = approvalRequestRepository.save(request);
 
         sendApprovalEmail(approvedRequest);
@@ -89,7 +95,7 @@ public class ApprovalRequestService {
         ApprovalRequest request = approvalRequestRepository.findById(requestId)
             .orElseThrow(() -> new RequestNotFoundException(requestId));
 
-        request.setStatus("Rejected");
+        request.setStatus(ApprovalStatus.REJECTED);
         ApprovalRequest rejectedRequest = approvalRequestRepository.save(request);
 
         sendRejectionEmail(rejectedRequest);
@@ -99,15 +105,15 @@ public class ApprovalRequestService {
 
     private void sendApprovalEmail(ApprovalRequest request) {
         String to = request.getBusinessOwner().getOwnerEmail();
-        String subject = "승인 요청 승인";
-        String text = "귀하의 승인 요청이 승인되었습니다.";
+        String subject = REQUEST_APPROVE_SUBJECT;
+        String text = REQUEST_APPROVE_TEXT;
         emailService.sendSimpleMessage(to, subject, text);
     }
 
     private void sendRejectionEmail(ApprovalRequest request) {
         String to = request.getBusinessOwner().getOwnerEmail();
-        String subject = "승인 요청 거부";
-        String text = "귀하의 승인 요청이 거부되었습니다.";
+        String subject = REQUEST_REJECT_SUBJECT;
+        String text = REQUEST_REJECT_TEXT;
         emailService.sendSimpleMessage(to, subject, text);
     }
 }

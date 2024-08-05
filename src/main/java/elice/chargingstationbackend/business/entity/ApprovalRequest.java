@@ -1,6 +1,8 @@
 package elice.chargingstationbackend.business.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -23,7 +25,8 @@ public class ApprovalRequest {
 
     private String requestType;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ApprovalStatus status;
 
     private LocalDateTime timestamp;
 
@@ -32,7 +35,7 @@ public class ApprovalRequest {
     private String identityProofPath;
 
 
-    public void updateApprovalRequest(BusinessOwner businessOwner, String requestType, String status, LocalDateTime timestamp,
+    public void updateApprovalRequest(BusinessOwner businessOwner, String requestType, ApprovalStatus status, LocalDateTime timestamp,
         String businessCertificate, String identityProof) {
         this.businessOwner = businessOwner;
         this.requestType = requestType;
@@ -41,7 +44,6 @@ public class ApprovalRequest {
         this.businessCertificatePath = businessCertificate;
         this.identityProofPath = identityProof;
     }
-    public void setStatus(String status) {
+    public void setStatus(ApprovalStatus status) {
         this.status = status;
-    }
-}
+    }}
