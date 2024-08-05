@@ -34,7 +34,7 @@ public class ApprovalRequestService {
     private final String bucketName = "chargingstation"; // 생성한 버킷 이름
 
     public ApprovalRequest createApprovalRequest(
-        Long ownerId, String requestType, MultipartFile businessCertificate, MultipartFile identityProof) throws IOException {
+        Long ownerId, MultipartFile businessCertificate, MultipartFile identityProof) throws IOException {
 
         BusinessOwner businessOwner = businessOwnerRepository.findById(ownerId)
             .orElseThrow(() -> new BusinessOwnerNotFoundException(ownerId));
@@ -44,7 +44,7 @@ public class ApprovalRequestService {
 
         ApprovalRequest approvalRequest = new ApprovalRequest();
         approvalRequest.updateApprovalRequest(
-            businessOwner, requestType, ApprovalStatus.PENDING, LocalDateTime.now(),
+            businessOwner, ApprovalStatus.PENDING, LocalDateTime.now(),
             businessCertificatePath, identityProofPath
         );
 
@@ -72,7 +72,7 @@ public class ApprovalRequestService {
             .orElseThrow(() -> new RequestNotFoundException(requestId));
 
         existingRequest.updateApprovalRequest(
-            updatedRequest.getBusinessOwner(), updatedRequest.getRequestType(), updatedRequest.getStatus(),
+            updatedRequest.getBusinessOwner(), updatedRequest.getStatus(),
             updatedRequest.getTimestamp(), updatedRequest.getBusinessCertificatePath(), updatedRequest.getIdentityProofPath()
         );
 

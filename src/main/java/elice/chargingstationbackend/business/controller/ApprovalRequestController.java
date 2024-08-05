@@ -9,24 +9,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-// 사업자 승인 요청을 처리하는 컨트롤러입니다.
-@RestController
+
+@RestController // 사업자 승인 요청을 처리하는 컨트롤러입니다.
 @RequestMapping("/api/approval-requests")
 @RequiredArgsConstructor
 public class ApprovalRequestController {
 
     private final ApprovalRequestService approvalRequestService;
 
-
     @PostMapping // 새로운 승인 요청을 생성합니다.
     public ResponseEntity<ApprovalRequest> createApprovalRequest(
         @RequestParam Long ownerId,
-        @RequestParam String requestType,
         @RequestParam("businessCertificate") MultipartFile businessCertificate,
         @RequestParam("identityProof") MultipartFile identityProof) throws IOException {
 
         ApprovalRequest approvalRequest = approvalRequestService.createApprovalRequest(
-            ownerId, requestType, businessCertificate, identityProof
+            ownerId, businessCertificate, identityProof
         );
         return ResponseEntity.ok(approvalRequest);
     }
