@@ -57,7 +57,7 @@ public class ChargerController {
         return ResponseEntity.ok().body(chargerDetail);
     }
 
-    // 충전소 추가
+    // 충전소 추가g
     @PostMapping("/place/addCharger")
     // @PreAuthorize("hasAuthority('')")
     public ResponseEntity<String> addCharger(@RequestBody ChargerRequestDTO chargerRequestDTO) {

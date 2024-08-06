@@ -25,6 +25,8 @@ bin/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+*.swp
+*.swo
 
 ### NetBeans ###
 /nbproject/private/
@@ -35,3 +37,34 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# 로그 파일들
+*.log
+
+# 운영체제 별 무시 파일들
+.DS_Store
+Thumbs.db
+
+# 빌드 디렉토리들
+build/
+.gradle/
+target/
+
+# IDE 별 무시 파일들
+# Eclipse
+.project
+.classpath
+.cproject
+.settings/
+
+# OS별 무시 파일들
+# Windows
+*.exe
+*.dll
+*.bat
+*.cmd
+*.com
+
+# macOS
+.AppleDouble
+.LSOverride
