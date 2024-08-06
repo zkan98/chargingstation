@@ -21,4 +21,3 @@ public class LocationFilter {
         return filteredList;
     }
 }
-

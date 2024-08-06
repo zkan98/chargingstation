@@ -1,18 +1,12 @@
 package elice.chargingstationbackend.charger.service;
 
-import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.List;
 
-import org.springframework.data.convert.ReadingConverter;
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import elice.chargingstationbackend.charger.dto.ChargerDetailResponseDTO;
-import elice.chargingstationbackend.charger.dto.ChargerFilterResponseDTO;
 import elice.chargingstationbackend.charger.dto.ChargerListResponseDTO;
 import elice.chargingstationbackend.charger.dto.ChargerRequestDTO;
 import elice.chargingstationbackend.charger.entity.Charger;
@@ -46,43 +40,47 @@ public class ChargerService {
     }
 
     // 충전소 세부 조회
-    public ChargerDetailResponseDTO getChagerDetail(Long chargerId) {
-        Charger chargerDetail = chargerRepository.findById(chargerId)
-                                        .orElseThrow(() -> new ChargerNotFoundException("해당 충전소를 찾을 수 없습니다. 충전소 식별번호 : " + chargerId));
+    public ChargerDetailResponseDTO getChagerDetail(String statId) {
+        Charger chargerDetail = chargerRepository.findById(statId)
+                                        .orElseThrow(() -> new ChargerNotFoundException("해당 충전소를 찾을 수 없습니다. 충전소 식별번호 : " + statId));
         return new ChargerDetailResponseDTO(chargerDetail);
     }
 
     // 충전소 추가
-    public Long addCharger(ChargerRequestDTO chargerRequestDTO) {
+    public String addCharger(ChargerRequestDTO chargerRequestDTO) {
         // BusinessOwner accessOwnerId = businessOwnerRepository.findById(ownerId)
         //                         .orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원입니다."));
+
+        if (chargerRequestDTO.getStatId() == null || chargerRequestDTO.getStatId().isEmpty()) {
+            chargerRequestDTO.setStatId(UUID.randomUUID().toString());
+        }
 
         Charger newCharger = chargerRequestDTO.toEntity();
         chargerRepository.save(newCharger);
 
-        return newCharger.getId();
+        return newCharger.getStatId();
     }
 
     // 충전소 수정
-    public void updateCharger(Long chargerId, ChargerRequestDTO chargerRequestDTO) {
-        Charger chargerToUpdate = chargerRepository.findById(chargerId)
-                                .orElseThrow(() -> new ChargerNotFoundException("해당 충전소를 찾을 수 없습니다. 충전소 식별번호 : " + chargerId));
+    public void updateCharger(String statId, ChargerRequestDTO chargerRequestDTO) {
+        Charger chargerToUpdate = chargerRepository.findById(statId)
+                                .orElseThrow(() -> new ChargerNotFoundException("해당 충전소를 찾을 수 없습니다. 충전소 식별번호 : " + statId));
         
-        chargerToUpdate.setChargerName(chargerRequestDTO.getChargerName());
-        chargerToUpdate.setAddress(chargerRequestDTO.getAddress());
-        chargerToUpdate.setSlots(chargerRequestDTO.getSlots());
-        chargerToUpdate.setChargingSpeed(chargerRequestDTO.getChargingSpeed());
+        chargerToUpdate.setStatNm(chargerRequestDTO.getStatNm());
+        chargerToUpdate.setAddr(chargerRequestDTO.getAddr());
+        chargerToUpdate.setStat(chargerRequestDTO.getStat());
+        chargerToUpdate.setSpeed(chargerRequestDTO.getSpeed());
         chargerToUpdate.setChargingFee(chargerRequestDTO.getChargingFee());
-        chargerToUpdate.setConnectorType(chargerRequestDTO.getConnectorType());
-        chargerToUpdate.setParkingFee(chargerRequestDTO.getParkingFee());
+        chargerToUpdate.setPowerType(chargerRequestDTO.getPowerType());
+        chargerToUpdate.setParkingFree(chargerRequestDTO.getParkingFree());
 
         chargerRepository.save(chargerToUpdate);
     }
 
     // 충전소 삭제
-    public void deleteCharger(Long chargerId) {
-        Charger chargerToDelete = chargerRepository.findById(chargerId)
-                                .orElseThrow(() -> new ChargerNotFoundException("해당 충전소를 찾을 수 없습니다. 충전소 식별번호 : " + chargerId));
+    public void deleteCharger(String statId) {
+        Charger chargerToDelete = chargerRepository.findById(statId)
+                                .orElseThrow(() -> new ChargerNotFoundException("해당 충전소를 찾을 수 없습니다. 충전소 식별번호 : " + statId));
         
         chargerRepository.delete(chargerToDelete);
     }

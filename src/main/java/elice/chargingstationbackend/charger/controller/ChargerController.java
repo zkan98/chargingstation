@@ -51,8 +51,8 @@ public class ChargerController {
     
     // 충전소 세부 조회
     @GetMapping("/place/{chargerId}")
-    public ResponseEntity<ChargerDetailResponseDTO> getChagerDetail(@PathVariable Long chargerId) {
-        ChargerDetailResponseDTO chargerDetail = chargerService.getChagerDetail(chargerId);
+    public ResponseEntity<ChargerDetailResponseDTO> getChagerDetail(@PathVariable String statId) {
+        ChargerDetailResponseDTO chargerDetail = chargerService.getChagerDetail(statId);
         
         return ResponseEntity.ok().body(chargerDetail);
     }
@@ -66,39 +66,39 @@ public class ChargerController {
         // }
         
         // Long ownerId = jwtUtil.getMemberIdFromToken(accessToken);
-        
-        Long chargerId = chargerService.addCharger(chargerRequestDTO);
 
-        return ResponseEntity.ok("충전소가 성공적으로 추가되었습니다. 충전소 식별번호 : " + chargerId);
+        String statId = chargerService.addCharger(chargerRequestDTO);
+
+        return ResponseEntity.ok("충전소가 성공적으로 추가되었습니다. 충전소 식별번호 : " + statId);
     }
 
     // 충전소 수정
     @PatchMapping("/place/updateCharger/{chargerId}")
     // @PreAuthorize("hasAuthority('')")
-    public ResponseEntity<String> updateCharger(@PathVariable Long chargerId, @RequestBody ChargerRequestDTO chargerRequestDTO) {
+    public ResponseEntity<String> updateCharger(@PathVariable String statId, @RequestBody ChargerRequestDTO chargerRequestDTO) {
         // if(!jwtUtil.validateToken(accessToken)) {
         //     throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 요청입니다.");
         // }
         
         // Long ownerId = jwtUtil.getMemberIdFromToken(accessToken);
         
-        chargerService.updateCharger(chargerId, chargerRequestDTO);
+        chargerService.updateCharger(statId, chargerRequestDTO);
 
-        return ResponseEntity.ok("충전소 정보가 성공적으로 수정되었습니다. 충전소 식별번호 : " + chargerId);
+        return ResponseEntity.ok("충전소 정보가 성공적으로 수정되었습니다. 충전소 식별번호 : " + statId);
     }
 
     // 충전소 삭제
     @DeleteMapping("/place/deleteCharger/{chargerId}")
     // @PreAuthorize("hasAuthority('')")
-    public ResponseEntity<String> deleteCharger(@PathVariable Long chargerId) {
+    public ResponseEntity<String> deleteCharger(@PathVariable String statId) {
         // if(!jwtUtil.validateToken(accessToken)) {
         //     throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 요청입니다.");
         // }
         
         // Long ownerId = jwtUtil.getMemberIdFromToken(accessToken);
 
-        chargerService.deleteCharger(chargerId);
+        chargerService.deleteCharger(statId);
 
-        return ResponseEntity.ok("충전소 정보가 성공적으로 삭제되었습니다. 충전소 식별번호 : " + chargerId);
+        return ResponseEntity.ok("충전소 정보가 성공적으로 삭제되었습니다. 충전소 식별번호 : " + statId);
     }
 }

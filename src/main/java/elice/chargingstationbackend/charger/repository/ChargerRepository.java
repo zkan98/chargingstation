@@ -13,22 +13,19 @@ import org.springframework.stereotype.Repository;
 import elice.chargingstationbackend.charger.entity.Charger;
 
 @Repository
-public interface ChargerRepository extends JpaRepository<Charger, Long> {
+public interface ChargerRepository extends JpaRepository<Charger, String> {
 
     // 충전소 세부 조회
-    Optional<Charger> findById(Long chargerId);
+    Optional<Charger> findById(String statId);
 
     // 충전소 검색(충전소 이름, 장소)
-    @Query("SELECT c FROM Charger c WHERE c.chargerName LIKE %:searchTerm% OR c.address LIKE %:searchTerm%")
+    @Query("SELECT c FROM Charger c WHERE c.statNm LIKE %:searchTerm% OR c.addr LIKE %:searchTerm%")
     List<Charger> searchByChargerNameOrAddress(@Param("searchTerm") String searchTerm);
 
     // 주변 충전소 조회
-    @Query("SELECT c FROM Charger c WHERE " +
-            "(6371 * acos( " +
-            "cos(radians(:latitude)) * cos(radians(c.latitude)) * " +
-            "cos(radians(c.longitude) - radians(:longitude)) + " +
-            "sin(radians(:latitude)) * sin(radians(c.latitude)) " +
-            ")) <= 10")  // 10km 이내
+    @Query(value = "SELECT * FROM charger " +
+            "WHERE ST_Distance_Sphere(POINT(longitude, latitude), POINT(:longitude, :latitude)) <= 5000",
+            nativeQuery = true)
     List<Charger> findCharger(
             @Param("latitude") Double userLatitude,
             @Param("longitude") Double userLongitude);

@@ -10,27 +10,31 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChargerRequestDTO {
-    private String chargerName;
-    private String address;
-    private int slots;
-    private Double chargingSpeed;
+    private String statId;
+    private String statNm;
+    private String addr;
+    private String stat;
+    private String speed;
     private Double chargingFee;
-    private String connectorType;
-    private int parkingFee;
-    private Double latitude;
-    private Double longitude;
+    private String chgerType;
+    private String powerType;
+    private String parkingFree;
+    private Double lat;
+    private Double lng;
 
     public Charger toEntity() {
         Charger charger = Charger.builder()
-                                .chargerName(chargerName)
-                                .address(address)
-                                .slots(slots)
-                                .chargingSpeed(chargingSpeed)
+                                .statId(statId)
+                                .statNm(statNm)
+                                .addr(addr)
+                                .stat(stat)
+                                .speed(speed)
                                 .chargingFee(chargingFee)
-                                .connectorType(connectorType)
-                                .parkingFee(parkingFee)
-                                .latitude(latitude)
-                                .longitude(longitude)
+                                .chgerType(chgerType)
+                                .powerType(powerType)
+                                .parkingFree(parkingFree)
+                                .lat(lat)
+                                .lng(lng)
                                 .build();
         return charger;
     }
