@@ -1,6 +1,6 @@
 package elice.chargingstationbackend.user.security;
 
-import elice.chargingstationbackend.user.service.CustomUser;
+import elice.chargingstationbackend.user.CustomUser;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -55,11 +55,9 @@ public class JwtFilter extends OncePerRequestFilter {
         var customUser = new CustomUser(
                 claim.get("username").toString(),
                 "",
-                authorities
+                authorities,
+                claim.get("nickname").toString()
         );
-
-        customUser.nickname = claim.get("nickname").toString();
-
 
 //        claim.get("username").toString();
         var authToken = new UsernamePasswordAuthenticationToken(

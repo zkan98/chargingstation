@@ -1,8 +1,7 @@
 package elice.chargingstationbackend.user.security;
 
 
-import elice.chargingstationbackend.user.service.CustomUser;
-import elice.chargingstationbackend.user.service.CustomUserDetailsService;
+import elice.chargingstationbackend.user.CustomUser;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -24,22 +23,21 @@ public class JwtUtil {
             ));//키 설정
 
     // 토큰생성
-    public static String createToken(Authentication auth) {
-
+    // Access Token 생성
+    public static String createAccessToken(Authentication auth) {
         CustomUser user = (CustomUser) auth.getPrincipal();
         var authorities = auth.getAuthorities().stream().map(a -> a.getAuthority()).collect(Collectors.joining(","));
-                                            //문자형태로
-            String jwt = Jwts.builder()
-                    .claim("username", user.getUsername())  //이메일
-                    .claim("nickname", user.getNickname())  //테이블 상 username, 닉네임
-                    .claim("authorities", authorities)      //권한 설정
-                    .issuedAt(new Date(System.currentTimeMillis()))
-                    .expiration(new Date(System.currentTimeMillis() + 10000)) //유효기간 10초
-                    .signWith(key)
-                    .compact();
-            return jwt;
-
+        return Jwts.builder()
+                .claim("username", user.getUsername())
+                .claim("nickname", user.getNickname())
+                .claim("authorities", authorities)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10))
+                .signWith(key)
+                .compact();
     }
+
+
 
 
     public static Claims extractToken(String token) {
@@ -51,3 +49,14 @@ public class JwtUtil {
 
 //refresh token -> 기존 토큰이 털렸나,
 //access 토큰이 만료 후에,
+
+// Refresh Token 생성
+//    public static String createRefreshToken(Authentication auth) {
+//        CustomUser user = (CustomUser) auth.getPrincipal();
+//        return Jwts.builder()
+//                .claim("username", user.getUsername())
+//                .issuedAt(new Date(System.currentTimeMillis()))
+//                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7)) // 7일 유효기간
+//                .signWith(key)
+//                .compact();
+//    }
