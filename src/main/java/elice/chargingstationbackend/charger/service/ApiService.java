@@ -7,6 +7,7 @@ import elice.chargingstationbackend.charger.repository.ChargerRepository;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.json.XML;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,7 @@ public class ApiService {
 
     private final String serviceKey = "4TbGmO/+UtIIPXlcDHVVZebt8muT2hdH8BixzgNuBePTYXaH3vbpY1PXhL7rZ1n7VrIR44UCyHU9DSMZLmTcAQ==";
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final JdbcTemplate jdbcTemplate;
 
     public String fetchChargerData(int pageNo, int numOfRows) throws IOException {
         StringBuilder urlBuilder = new StringBuilder("http://apis.data.go.kr/B552584/EvCharger/getChargerInfo");
@@ -79,30 +81,23 @@ public class ApiService {
 
     public void processAndSaveChargers() {
         int pageNo = 1;
-        int numOfRows = 1000; // 페이지당 데이터 수
-        boolean hasNextPage = true;
-        int batchSize = 1000; // 배치 사이즈 조정
+        int numOfRows = 5000; // 페이지당 데이터 수
+        int batchSize = 5000; // 배치 사이즈
+        int maxPages = 500; // 최대 페이지 수 (무한 루프 방지)
 
-        while (hasNextPage) {
+        while (pageNo <= maxPages) {
             try {
                 String jsonResponse = fetchChargerData(pageNo, numOfRows);
-
-                // JSON -> DTO
                 ChargerApiResponseDTO dto = objectMapper.readValue(jsonResponse, ChargerApiResponseDTO.class);
                 ChargerApiResponseDTO.Items items = dto.getItems();
 
-                if (items == null || items.getItemList() == null) {
-                    hasNextPage = false;
+                // 데이터가 비어있으면 종료
+                if (items == null || items.getItemList() == null || items.getItemList().isEmpty()) {
+                    System.out.println("불러올 데이터가 더이상 없습니다.");
                     break;
                 }
 
                 List<ChargerApiResponseDTO.Item> itemList = items.getItemList();
-                if (itemList.isEmpty()) {
-                    hasNextPage = false;
-                    break;
-                }
-
-                // 데이터 리스트를 배치로 저장
                 List<Charger> chargers = itemList.stream()
                         .map(ChargerApiResponseDTO.Item::toEntity)
                         .collect(Collectors.toList());
@@ -111,22 +106,24 @@ public class ApiService {
                     int end = Math.min(i + batchSize, chargers.size());
                     List<Charger> batch = chargers.subList(i, end);
                     chargerRepository.saveAll(batch);
-                    chargerRepository.flush(); // JPA에서 메모리 사용 최적화
+                    chargerRepository.flush();
                 }
 
-                // 다음 페이지로 이동
                 pageNo++;
 
             } catch (IOException e) {
                 // 실패 시 로깅 또는 알림 처리
+                System.err.println("데이터를 불러오는 도중 에러발생: " + e.getMessage());
                 e.printStackTrace();
+                // 실패할 경우에는 계속 진행하거나 종료 결정
+                break;
             }
         }
     }
 
-        @Scheduled(fixedRate = 600000) // 10분마다 API 호출
-        public void scheduledFetchAndSaveChargers() {
-            processAndSaveChargers();
-        }
+//        @Scheduled(fixedRate = 600000) // 10분마다 API 호출
+//        public void scheduledFetchAndSaveChargers() {
+//            processAndSaveChargers();
+//        }
 }
 

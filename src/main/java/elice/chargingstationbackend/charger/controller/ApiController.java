@@ -20,4 +20,9 @@ public class ApiController {
             @RequestParam int numOfRows) throws IOException {
         return apiService.fetchChargerData(pageNo, numOfRows);
     }
+
+    @GetMapping("/dataLoad")
+    public void getData() throws IOException {
+        apiService.processAndSaveChargers();
+    }
 }
