@@ -4,6 +4,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.List;
 
+import elice.chargingstationbackend.charger.dto.LocationDTO;
 import org.springframework.stereotype.Service;
 
 import elice.chargingstationbackend.charger.dto.ChargerDetailResponseDTO;
@@ -20,7 +21,10 @@ public class ChargerService {
     private final ChargerRepository chargerRepository;
 
     // 주변 충전소 리스트 자동 조회
-    public List<ChargerListResponseDTO> getNearbyChargerList(Double userLatitude, Double userLongitude) {
+    public List<ChargerListResponseDTO> getNearbyChargerList(LocationDTO location) {
+        Double userLatitude = location.getUserLatitude();
+        Double userLongitude = location.getUserLongitude();
+
         List<Charger> nearByChargerList = chargerRepository.findCharger(userLatitude, userLongitude);
 
         return nearByChargerList.stream()

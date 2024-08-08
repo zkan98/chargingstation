@@ -18,6 +18,8 @@ public class ChargerListResponseDTO {
     private Double chargingFee;
     private int parkingFee;
     private String stat;
+    private Double lat;
+    private Double lng;
 
     public ChargerListResponseDTO(Charger charger) {
         this.statId = charger.getStatId();
@@ -28,5 +30,7 @@ public class ChargerListResponseDTO {
         this.speed = charger.getSpeed();
         this.chargingFee = charger.getChargingFee();
         this.stat = charger.getStat();
+        this.lat = charger.getLat();
+        this.lng = charger.getLng();
     }
 }

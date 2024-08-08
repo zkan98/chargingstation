@@ -30,13 +30,10 @@ public class ChargerController {
     private final ChargerService chargerService;
     
     // 주변 충전소 리스트 자동 조회
-    @GetMapping("/list")
-    public ResponseEntity<List<ChargerListResponseDTO>> getNearbyChargerList(LocationDTO location) {
+    @PostMapping("/list")
+    public ResponseEntity<List<ChargerListResponseDTO>> getNearbyChargerList(@RequestBody LocationDTO location) {
 
-        Double userLatitude = location.getUserLatitude();
-        Double userLongitude = location.getUserLongitude();
-
-        List<ChargerListResponseDTO> nearByChargerPage = chargerService.getNearbyChargerList(userLatitude, userLongitude);
+        List<ChargerListResponseDTO> nearByChargerPage = chargerService.getNearbyChargerList(location);
 
         return ResponseEntity.ok().body(nearByChargerPage);
     }

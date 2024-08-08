@@ -23,10 +23,12 @@ public interface ChargerRepository extends JpaRepository<Charger, String> {
     List<Charger> searchByChargerNameOrAddress(@Param("searchTerm") String searchTerm);
 
     // 주변 충전소 조회
-    @Query(value = "SELECT * FROM charger " +
-            "WHERE ST_Distance_Sphere(POINT(longitude, latitude), POINT(:longitude, :latitude)) <= 5000",
+    @Query(value = "SELECT * FROM charger c " +
+            "WHERE ST_Distance_Sphere(POINT(c.lng, c.lat), POINT(:lng, :lat)) <= 5000 " +
+            "ORDER BY ST_Distance_Sphere(POINT(c.lng, c.lat), POINT(:lng, :lat)) ASC " +
+            "LIMIT 150",
             nativeQuery = true)
     List<Charger> findCharger(
-            @Param("latitude") Double userLatitude,
-            @Param("longitude") Double userLongitude);
+            @Param("lat") Double userLatitude,
+            @Param("lng") Double userLongitude);
 }
