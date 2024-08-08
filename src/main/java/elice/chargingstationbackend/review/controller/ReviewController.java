@@ -2,48 +2,37 @@ package elice.chargingstationbackend.review.controller;
 
 import elice.chargingstationbackend.review.entity.Review;
 import elice.chargingstationbackend.review.service.ReviewService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/reviews")
+@RequiredArgsConstructor
 public class ReviewController {
 
-    @Autowired
-    private ReviewService reviewService;
-
-    @GetMapping
-    public List<Review> getAllReviews() {
-        return reviewService.getAllReviews();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Review> getReviewById(@PathVariable Long id) {
-        Optional<Review> review = reviewService.getReviewById(id);
-        if (review.isPresent()) {
-            return ResponseEntity.ok(review.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
+    private final ReviewService reviewService;
 
     @PostMapping
-    public Review createReview(@RequestBody Review review) {
-        return reviewService.createReview(review);
+    public ResponseEntity<Review> createReview(@RequestBody Review review) {
+        return ResponseEntity.ok(reviewService.saveReview(review));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Review> updateReview(@PathVariable Long id, @RequestBody Review reviewDetails) {
-        return ResponseEntity.ok(reviewService.updateReview(id, reviewDetails));
+    @GetMapping("/charger/{chgerId}")
+    public ResponseEntity<List<Review>> getReviewsByChargerId(@PathVariable String chgerId) {
+        return ResponseEntity.ok(reviewService.getReviewsByChargerId(chgerId));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
-        reviewService.deleteReview(id);
+    @PutMapping("/{reviewId}")
+    public ResponseEntity<Review> updateReview(@PathVariable Long reviewId, @RequestBody Review reviewDetails) {
+        return ResponseEntity.ok(reviewService.updateReview(reviewId, reviewDetails));
+    }
+
+    @DeleteMapping("/{reviewId}")
+    public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId) {
+        reviewService.deleteReview(reviewId);
         return ResponseEntity.noContent().build();
     }
 }

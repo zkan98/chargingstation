@@ -1,10 +1,14 @@
 package elice.chargingstationbackend.review.entity;
 
 import elice.chargingstationbackend.charger.entity.Charger;
+import elice.chargingstationbackend.user.User;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 public class Review {
 
     @Id
@@ -26,54 +30,5 @@ public class Review {
     private String comment;
 
     @Column(nullable = false)
-    private LocalDateTime timestamp;
-
-    // Getters and Setters
-    public Long getReviewId() {
-        return reviewId;
-    }
-
-    public void setReviewId(Long reviewId) {
-        this.reviewId = reviewId;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Charger getCharger() {
-        return charger;
-    }
-
-    public void setCharger(Charger charger) {
-        this.charger = charger;
-    }
-
-    public double getRating() {
-        return rating;
-    }
-
-    public void setRating(double rating) {
-        this.rating = rating;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
+    private String timestamp;
 }

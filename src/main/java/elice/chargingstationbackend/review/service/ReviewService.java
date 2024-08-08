@@ -2,39 +2,37 @@ package elice.chargingstationbackend.review.service;
 
 import elice.chargingstationbackend.review.entity.Review;
 import elice.chargingstationbackend.review.repository.ReviewRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ReviewService {
 
-    @Autowired
-    private ReviewRepository reviewRepository;
+    private final ReviewRepository reviewRepository;
 
-    public List<Review> getAllReviews() {
-        return reviewRepository.findAll();
-    }
-
-    public Optional<Review> getReviewById(Long id) {
-        return reviewRepository.findById(id);
-    }
-
-    public Review createReview(Review review) {
+    public Review saveReview(Review review) {
         return reviewRepository.save(review);
     }
 
-    public Review updateReview(Long id, Review reviewDetails) {
-        Review review = reviewRepository.findById(id).orElseThrow(() -> new RuntimeException("Review not found"));
+    public List<Review> getReviewsByChargerId(String chgerId) {
+        return reviewRepository.findByCharger_ChgerId(chgerId);
+    }
+
+    public Review updateReview(Long reviewId, Review reviewDetails) {
+        Review review = reviewRepository.findById(reviewId)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid review Id:" + reviewId));
         review.setRating(reviewDetails.getRating());
         review.setComment(reviewDetails.getComment());
         review.setTimestamp(reviewDetails.getTimestamp());
         return reviewRepository.save(review);
     }
 
-    public void deleteReview(Long id) {
-        reviewRepository.deleteById(id);
+    public void deleteReview(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid review Id:" + reviewId));
+        reviewRepository.delete(review);
     }
 }
