@@ -2,21 +2,29 @@ package elice.chargingstationbackend.user;
 
 
 import elice.chargingstationbackend.user.security.JwtUtil;
-import elice.chargingstationbackend.user.service.CustomUser;
+import elice.chargingstationbackend.user.service.RefreshTokenService;
 import elice.chargingstationbackend.user.service.UserService;
+import elice.chargingstationbackend.user.service.CustomUserDetailsService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -26,6 +34,22 @@ public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenService refreshTokenService;
+
+
+
+    private User convertToUser(CustomUser customUser, Collection<? extends GrantedAuthority> authorities) {
+        User user = new User();
+        user.setEmail(customUser.getUsername());
+        user.setPassword(customUser.getPassword());
+        user.setUsername(customUser.getNickname());
+        user.setAuthorities((Collection<GrantedAuthority>) authorities);
+        return user;
+    }
+
 
     @GetMapping("/login")
     public String loginPage () { return "/login.html";}
@@ -68,31 +92,105 @@ public class UserController {
     }
      */
 
-
     @PostMapping("/login")
     @ResponseBody
-    public String login(@RequestBody Map<String, String> data, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> userData, HttpServletResponse response) {
+        String email = userData.get("email");
+        String password = userData.get("password");
 
-        var authToken = new UsernamePasswordAuthenticationToken(
-                data.get("email"), data.get("password")
-        );
-        var auth = authenticationManagerBuilder.getObject().authenticate(authToken);
-        SecurityContextHolder.getContext().setAuthentication(auth); // auth 변수에 유저정보추가
-        //                                              이게 최신 auth 와 동일
-        var jwt = JwtUtil.createToken(SecurityContextHolder.getContext().getAuthentication());
+        try {
+            Authentication auth = userService.authenticate(email, password);
+            Object principal = auth.getPrincipal();
+
+            if (principal instanceof CustomUser) {
+                CustomUser customUser = (CustomUser) principal;
+                User user = convertToUser(customUser, auth.getAuthorities());
+
+                String accessToken = JwtUtil.createAccessToken(auth);
+                RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+
+                // 쿠키에 Refresh Token 저장
+                Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken.getToken());
+                refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7일 유효기간
+                refreshTokenCookie.setHttpOnly(true);
+                refreshTokenCookie.setPath("/");
+                response.addCookie(refreshTokenCookie);
+
+                Map<String, Object> responseData = new HashMap<>();
+                responseData.put("message", "로그인되었습니다.");
+                responseData.put("accessToken", accessToken); // 응답 바디에 Access Token 포함
+
+                return ResponseEntity.ok(responseData);
+            } else {
+                throw new IllegalArgumentException("Unexpected principal type");
+            }
+        } catch (UsernameNotFoundException | IllegalArgumentException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "잘못된 이메일 또는 비밀번호입니다.");
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @PostMapping("/token/refresh")
+    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
+        String refreshToken = Arrays.stream(request.getCookies())
+                .filter(cookie -> "refreshToken".equals(cookie.getName()))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElse(null);
+
+        if (refreshToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh Token이 없습니다.");
+        }
+
+        try {
+            Claims claims = JwtUtil.extractToken(refreshToken);
+            String username = claims.get("username", String.class);
+
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+            Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+            String newAccessToken = JwtUtil.createAccessToken(auth);
+
+            Map<String, Object> responseData = new HashMap<>();
+            responseData.put("accessToken", newAccessToken);
+
+            return ResponseEntity.ok(responseData);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 Refresh Token입니다.");
+        }
+    }
 
 
-        var cookie = new Cookie("jwt", jwt);
-        cookie.setMaxAge(600);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        response.addCookie((cookie));
+    @PostMapping("/logout")
+    @ResponseBody
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
 
-//r개발자도구, 앱, 쿠키
-        return jwt;
+        // 쿠키 무효화
+        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
+        refreshTokenCookie.setMaxAge(0);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
+        response.addCookie(refreshTokenCookie);
+
+        String refreshToken = refreshTokenService.getRefreshTokenFromRequest(request);
+        if (refreshToken != null) {
+            refreshTokenRepository.deleteByToken(refreshToken);
+        }
+
+        Map<String, String> responseData = new HashMap<>();
+        responseData.put("message", "로그아웃되었습니다.");
+
+        return ResponseEntity.ok(responseData);
     }
 
 
 
 
+
 }
+

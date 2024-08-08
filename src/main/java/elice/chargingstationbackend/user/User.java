@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+
+import java.util.Collection;
 
 @Entity
 @Getter
@@ -46,4 +49,11 @@ public class User {
     public enum ConnectorType {
         SLOW, DC_COMBO, CHADEMO, AC_THREE_PHASE, TESLA, PORTABLE, WIRELESS
     }
+
+    @Transient
+    private Collection<GrantedAuthority> authorities;
+    //이렇게 하는게 일반적인가?
+    //User 기반 refresh toekn 생성, 근데 getPrincipal 이 CustomUser 반환 -> customUser, User 변환
+    //가능케 하기 위해 추가한건데...
+
 }
