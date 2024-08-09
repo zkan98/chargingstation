@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ChargerDetailResponseDTO {
     private String statId;
-    private String businessName;
+    private String busiNm;
     private String busiCall;
     private String statNm;
     private String addr;
@@ -19,7 +19,7 @@ public class ChargerDetailResponseDTO {
     private String stat;
 
     public ChargerDetailResponseDTO(Charger charger) {
-        this.businessName = charger.getBusinessOwner().getBusiNm();
+        this.busiNm = charger.getBusinessOwner().getBusiNm();
         this.busiCall = charger.getBusinessOwner().getBusiCall();
         this.statId = charger.getStatId();
         this.statNm = charger.getStatNm();

@@ -51,9 +51,6 @@ public class Charger {
     @Column(name = "stat_upd_dt")
     private String statUpdDt;
 
-    @Column(name = "power_type")
-    private String powerType;
-
     @Column(name = "output")
     private String output;
 
@@ -74,9 +71,6 @@ public class Charger {
 
     @Column(name = "parking_free")
     private String parkingFree;
-
-    @Column(name = "speed")
-    private String speed;
 
     @Column(name = "limit_yn")
     private String limitYn;

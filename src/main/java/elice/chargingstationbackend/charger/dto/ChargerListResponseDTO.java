@@ -14,7 +14,7 @@ public class ChargerListResponseDTO {
     private String statNm;
     private String addr;
     private String chgerType;
-    private String speed;
+    private String output;
     private Double chargingFee;
     private int parkingFee;
     private String stat;
@@ -27,7 +27,7 @@ public class ChargerListResponseDTO {
         this.statNm = charger.getStatNm();
         this.addr = charger.getAddr();
         this.chgerType = charger.getChgerType();
-        this.speed = charger.getSpeed();
+        this.output = charger.getOutput();
         this.chargingFee = charger.getChargingFee();
         this.stat = charger.getStat();
         this.lat = charger.getLat();

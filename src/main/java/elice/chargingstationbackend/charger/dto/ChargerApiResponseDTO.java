@@ -125,7 +125,6 @@ public class ChargerApiResponseDTO {
                 .useTime(useTime)
                 .stat(stat)
                 .statUpdDt(statUpdDt)
-                .powerType(powerType)
                 .output(output)
                 .method(method)
                 .zcode(zcode)
@@ -133,7 +132,6 @@ public class ChargerApiResponseDTO {
                 .kind(kind)
                 .kindDetail(kindDetail)
                 .parkingFree(parkingFree)
-                .speed(speed)
                 .limitYn(limitYn)
                 .limitDetail(limitDetail)
                 .build();

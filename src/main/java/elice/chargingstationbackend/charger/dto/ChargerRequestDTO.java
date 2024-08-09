@@ -14,11 +14,9 @@ public class ChargerRequestDTO {
     private String statId;
     private String statNm;
     private String addr;
-    private String stat;
-    private String speed;
     private Double chargingFee;
+    private String output;
     private String chgerType;
-    private String powerType;
     private String parkingFree;
     private Double lat;
     private Double lng;
@@ -28,11 +26,9 @@ public class ChargerRequestDTO {
             .statId(statId)
             .statNm(statNm)
             .addr(addr)
-            .stat(stat)
-            .speed(speed)
             .chargingFee(chargingFee)
+            .output(output)
             .chgerType(chgerType)
-            .powerType(powerType)
             .parkingFree(parkingFree)
             .lat(lat)
             .lng(lng)
