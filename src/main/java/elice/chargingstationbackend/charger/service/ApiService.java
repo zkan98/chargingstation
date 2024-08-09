@@ -4,11 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import elice.chargingstationbackend.charger.dto.ChargerApiResponseDTO;
 import elice.chargingstationbackend.charger.entity.Charger;
 import elice.chargingstationbackend.charger.repository.ChargerRepository;
+import elice.chargingstationbackend.business.entity.BusinessOwner;
+import elice.chargingstationbackend.business.repository.BusinessOwnerRepository;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.json.XML;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -18,12 +19,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ApiService {
     private final ChargerRepository chargerRepository;
+    private final BusinessOwnerRepository businessOwnerRepository;
 
     private final String serviceKey = "4TbGmO/+UtIIPXlcDHVVZebt8muT2hdH8BixzgNuBePTYXaH3vbpY1PXhL7rZ1n7VrIR44UCyHU9DSMZLmTcAQ==";
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -93,14 +96,14 @@ public class ApiService {
 
                 // 데이터가 비어있으면 종료
                 if (items == null || items.getItemList() == null || items.getItemList().isEmpty()) {
-                    System.out.println("불러올 데이터가 더이상 없습니다.");
+                    System.out.println("불러올 데이터가 더 이상 없습니다.");
                     break;
                 }
 
                 List<ChargerApiResponseDTO.Item> itemList = items.getItemList();
                 List<Charger> chargers = itemList.stream()
-                        .map(ChargerApiResponseDTO.Item::toEntity)
-                        .collect(Collectors.toList());
+                    .map(this::createOrUpdateCharger)
+                    .collect(Collectors.toList());
 
                 for (int i = 0; i < chargers.size(); i += batchSize) {
                     int end = Math.min(i + batchSize, chargers.size());
@@ -121,9 +124,26 @@ public class ApiService {
         }
     }
 
-//        @Scheduled(fixedRate = 600000) // 10분마다 API 호출
-//        public void scheduledFetchAndSaveChargers() {
-//            processAndSaveChargers();
-//        }
-}
+    private Charger createOrUpdateCharger(ChargerApiResponseDTO.Item item) {
+        // BusinessOwner를 먼저 조회하거나 없으면 새로 생성
+        BusinessOwner businessOwner = businessOwnerRepository.findByBusiId(item.getBusiId())
+            .orElseGet(() -> {
+                BusinessOwner newOwner = new BusinessOwner();
+                newOwner.setBusiId(item.getBusiId());
+                newOwner.setBusiNm(item.getBusiNm());
+                newOwner.setBusiCall(item.getBusiCall());
+                newOwner.setBnm(item.getBnm());
+                return businessOwnerRepository.save(newOwner);
+            });
 
+        // Charger 엔티티 생성
+        Charger charger = item.toEntity();
+        charger.setBusinessOwner(businessOwner);
+        return charger;
+    }
+
+//    @Scheduled(fixedRate = 600000) // 10분마다 API 호출
+//    public void scheduledFetchAndSaveChargers() {
+//        processAndSaveChargers();
+//    }
+}

@@ -6,7 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChargerRequestDTO {
@@ -23,19 +24,18 @@ public class ChargerRequestDTO {
     private Double lng;
 
     public Charger toEntity() {
-        Charger charger = Charger.builder()
-                                .statId(statId)
-                                .statNm(statNm)
-                                .addr(addr)
-                                .stat(stat)
-                                .speed(speed)
-                                .chargingFee(chargingFee)
-                                .chgerType(chgerType)
-                                .powerType(powerType)
-                                .parkingFree(parkingFree)
-                                .lat(lat)
-                                .lng(lng)
-                                .build();
-        return charger;
+        return Charger.builder()
+            .statId(statId)
+            .statNm(statNm)
+            .addr(addr)
+            .stat(stat)
+            .speed(speed)
+            .chargingFee(chargingFee)
+            .chgerType(chgerType)
+            .powerType(powerType)
+            .parkingFree(parkingFree)
+            .lat(lat)
+            .lng(lng)
+            .build();
     }
 }

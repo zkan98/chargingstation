@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import elice.chargingstationbackend.charger.entity.Charger;
 import lombok.Data;
+
 import java.util.List;
 
 @Data
@@ -114,32 +115,28 @@ public class ChargerApiResponseDTO {
 
         public Charger toEntity() {
             return Charger.builder()
-                    .statNm(statNm)
-                    .statId(statId)
-                    .chgerId(chgerId)
-                    .chgerType(chgerType)
-                    .addr(addr)
-                    .lat(lat)
-                    .lng(lng)
-                    .useTime(useTime)
-                    .busiId(busiId)
-                    .bnm(bnm)
-                    .busiNm(busiNm)
-                    .busiCall(busiCall)
-                    .stat(stat)
-                    .statUpdDt(statUpdDt)
-                    .powerType(powerType)
-                    .output(output)
-                    .method(method)
-                    .zcode(zcode)
-                    .zscode(zscode)
-                    .kind(kind)
-                    .kindDetail(kindDetail)
-                    .parkingFree(parkingFree)
-                    .speed(speed)
-                    .limitYn(limitYn)
-                    .limitDetail(limitDetail)
-                    .build();
+                .statNm(statNm)
+                .statId(statId)
+                .chgerId(chgerId)
+                .chgerType(chgerType)
+                .addr(addr)
+                .lat(lat)
+                .lng(lng)
+                .useTime(useTime)
+                .stat(stat)
+                .statUpdDt(statUpdDt)
+                .powerType(powerType)
+                .output(output)
+                .method(method)
+                .zcode(zcode)
+                .zscode(zscode)
+                .kind(kind)
+                .kindDetail(kindDetail)
+                .parkingFree(parkingFree)
+                .speed(speed)
+                .limitYn(limitYn)
+                .limitDetail(limitDetail)
+                .build();
         }
     }
 }

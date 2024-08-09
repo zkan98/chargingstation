@@ -19,8 +19,8 @@ public class ChargerDetailResponseDTO {
     private String stat;
 
     public ChargerDetailResponseDTO(Charger charger) {
-        // this.busiNm = charger.getBusinessOwner().getBusiNm();
-        // this.busiCall = charger.getBusinessOwner().getBusiCall();
+        this.businessName = charger.getBusinessOwner().getBusiNm();
+        this.busiCall = charger.getBusinessOwner().getBusiCall();
         this.statId = charger.getStatId();
         this.statNm = charger.getStatNm();
         this.addr = charger.getAddr();

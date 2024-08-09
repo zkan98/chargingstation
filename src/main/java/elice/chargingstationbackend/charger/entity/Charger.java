@@ -1,5 +1,6 @@
 package elice.chargingstationbackend.charger.entity;
 
+import elice.chargingstationbackend.business.entity.BusinessOwner;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,10 +8,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.UUID;
-
-@Entity @Builder
-@Getter @Setter
+@Entity
+@Builder
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Charger {
@@ -18,17 +19,6 @@ public class Charger {
     @Id
     @Column(name = "stat_id", unique = true, nullable = false)
     private String statId;
-
-    @PrePersist
-    public void prePersist() {
-        if (this.statId == null || this.statId.isEmpty()) {
-            this.statId = UUID.randomUUID().toString();
-        }
-    }
-
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "owner_id")
-    // private BusinessOwner businessOwner;
 
     @Column(name = "stat_nm")
     private String statNm;
@@ -42,9 +32,6 @@ public class Charger {
     @Column(name = "addr")
     private String addr;
 
-    @Column(name = "power_type")
-    private String powerType;
-
     @Column(name = "lat")
     private Double lat;
 
@@ -54,23 +41,18 @@ public class Charger {
     @Column(name = "use_time")
     private String useTime;
 
-    @Column(name = "busi_id")
-    private String busiId;
-
-    @Column(name = "bnm")
-    private String bnm;
-
-    @Column(name = "busi_nm")
-    private String busiNm;
-
-    @Column(name = "busi_call")
-    private String busiCall;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private BusinessOwner businessOwner;
 
     @Column(name = "stat")
     private String stat;
 
     @Column(name = "stat_upd_dt")
     private String statUpdDt;
+
+    @Column(name = "power_type")
+    private String powerType;
 
     @Column(name = "output")
     private String output;
@@ -90,6 +72,9 @@ public class Charger {
     @Column(name = "kind_detail")
     private String kindDetail;
 
+    @Column(name = "parking_free")
+    private String parkingFree;
+
     @Column(name = "speed")
     private String speed;
 
@@ -101,7 +86,4 @@ public class Charger {
 
     @Column(name = "charging_fee")
     private Double chargingFee;
-
-    @Column(name = "parking_free")
-    private String parkingFree;
 }
