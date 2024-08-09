@@ -12,8 +12,8 @@ import java.util.Collection;
 public class CustomUser extends User {
     private String nickname;
 
-    public CustomUser(String username, String password, Collection<? extends GrantedAuthority> authorities, String nickname) {
-        super(username, password, authorities);
+    public CustomUser(String email, String password, Collection<? extends GrantedAuthority> authorities, String nickname) {
+        super(email, password, authorities);
         this.nickname = nickname;
     }
 }

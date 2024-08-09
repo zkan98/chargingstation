@@ -41,14 +41,18 @@ public class UserController {
 
 
 
-    private User convertToUser(CustomUser customUser, Collection<? extends GrantedAuthority> authorities) {
-        User user = new User();
-        user.setEmail(customUser.getUsername());
-        user.setPassword(customUser.getPassword());
-        user.setUsername(customUser.getNickname());
-        user.setAuthorities((Collection<GrantedAuthority>) authorities);
-        return user;
-    }
+//    private User convertToUser(CustomUser customUser, Collection<? extends GrantedAuthority> authorities) {
+//        User user = new User();
+//        user.setEmail(customUser.getUsername());
+//        user.setPassword(customUser.getPassword());
+//        user.setUsername(customUser.getNickname());
+//        user.setAuthorities((Collection<GrantedAuthority>) authorities);
+//
+//        return user;
+//    }
+
+
+
 
 
     @GetMapping("/login")
@@ -102,9 +106,10 @@ public class UserController {
             Authentication auth = userService.authenticate(email, password);
             Object principal = auth.getPrincipal();
 
-            if (principal instanceof CustomUser) {
-                CustomUser customUser = (CustomUser) principal;
-                User user = convertToUser(customUser, auth.getAuthorities());
+            if (principal instanceof CustomUser customUser) {
+
+                User user = userRepository.findByEmail(customUser.getUsername())
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + customUser.getUsername()));
 
                 String accessToken = JwtUtil.createAccessToken(auth);
                 RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
@@ -187,6 +192,8 @@ public class UserController {
 
         return ResponseEntity.ok(responseData);
     }
+
+
 
 
 
