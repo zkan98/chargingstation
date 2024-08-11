@@ -9,21 +9,28 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChargerListResponseDTO {
+    private String statId;
     private String businessName;
-    private String chargerName;
-    private String address;
-    private String connectorType;
-    private double chargingFee;
-    private int slots;
-    private int availableSlots;
+    private String statNm;
+    private String addr;
+    private String chgerType;
+    private String output;
+    private Double chargingFee;
+    private int parkingFee;
+    private String stat;
+    private Double lat;
+    private Double lng;
 
     public ChargerListResponseDTO(Charger charger) {
-        // this.businessName = charger.getOwner().getBusinessName();
-        this.chargerName = charger.getChargerName();
-        this.address = charger.getAddress();
-        this.connectorType = charger.getConnectorType();
+        this.statId = charger.getStatId();
+        this.businessName = charger.getBusinessOwner().getBusiNm();
+        this.statNm = charger.getStatNm();
+        this.addr = charger.getAddr();
+        this.chgerType = charger.getChgerType();
+        this.output = charger.getOutput();
         this.chargingFee = charger.getChargingFee();
-        this.slots = charger.getSlots();
-        this.availableSlots = charger.getAvailableSlots();
+        this.stat = charger.getStat();
+        this.lat = charger.getLat();
+        this.lng = charger.getLng();
     }
 }
