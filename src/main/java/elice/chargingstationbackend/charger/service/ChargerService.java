@@ -8,6 +8,8 @@ import elice.chargingstationbackend.business.entity.BusinessOwner;
 import elice.chargingstationbackend.business.exception.BusinessOwnerNotFoundException;
 import elice.chargingstationbackend.business.repository.BusinessOwnerRepository;
 import elice.chargingstationbackend.charger.dto.*;
+import elice.chargingstationbackend.charger.repository.ChargerSpecification;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import elice.chargingstationbackend.charger.entity.Charger;
@@ -21,19 +23,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChargerService {
     private final ChargerRepository chargerRepository;
     private final BusinessOwnerRepository businessOwnerRepository;
+    private final GeocodingService geocodingService;
 
     // 주변 충전소 리스트 자동 조회(+필터)
-    public List<ChargerListResponseDTO> getNearbyChargerList(LocationDTO location, ChargerFilterDTO filter) {
-        // 필터 값이 제공되지 않은 경우 빈 리스트를 null로 변환
-        List<String> chgerType = filter.getChgerType().isEmpty() ? null : filter.getChgerType();
-        List<String> output = filter.getOutput().isEmpty() ? null : filter.getOutput();
-        Double chargingFee = filter.getChargingFee() == Double.MAX_VALUE ? null : filter.getChargingFee();
-        String parkingFree = filter.getParkingFree().isEmpty() ? null : filter.getParkingFree();
-        List<String> kind = filter.getKind().isEmpty() ? null : filter.getKind();
-        List<Long> ownerIds = filter.getOwnerIds().isEmpty() ? null : filter.getOwnerIds();
+    public List<ChargerListResponseDTO> getNearbyChargerList(LocationDTO location, List<String> chgerType,
+                                                             List<String> output, Double chargingFee,
+                                                             String parkingFree, List<String> kind, List<Long> ownerIds) {
+        // 필터 값이 제공되지 않은 경우, 빈 리스트를 null로 변환
+        chgerType = (chgerType == null || chgerType.isEmpty()) ? null : chgerType;
+        output = (output == null || output.isEmpty()) ? null : output;
+        chargingFee = (chargingFee == null || chargingFee == Double.MAX_VALUE) ? null : chargingFee;
+        parkingFree = (parkingFree == null || parkingFree.isEmpty()) ? null : parkingFree;
+        kind = (kind == null || kind.isEmpty()) ? null : kind;
+        ownerIds = (ownerIds == null || ownerIds.isEmpty()) ? null : ownerIds;
 
-        // Repository 호출
-        List<Charger> nearByChargerList = chargerRepository.findChargerWithFilters(
+        // Specification 생성
+        Specification<Charger> spec = new ChargerSpecification(
                 location.getUserLatitude(),
                 location.getUserLongitude(),
                 chgerType,
@@ -43,6 +48,9 @@ public class ChargerService {
                 kind,
                 ownerIds
         );
+
+        // Repository 호출
+        List<Charger> nearByChargerList = chargerRepository.findAll(spec);
 
         return nearByChargerList.stream()
                 .map(ChargerListResponseDTO::new)
@@ -73,6 +81,12 @@ public class ChargerService {
 //         BusinessOwner accessOwnerId = businessOwnerRepository.findById(ownerId)
 //                                 .orElseThrow(() -> new BusinessOwnerNotFoundException(ownerId));
 
+        // 주소를 위도와 경도로 변환
+        Double[] coordinates = geocodingService.getCoordinates(chargerRequestDTO.getAddr());
+        chargerRequestDTO.setLat(coordinates[0]);
+        chargerRequestDTO.setLng(coordinates[1]);
+
+
         if (chargerRequestDTO.getStatId() == null || chargerRequestDTO.getStatId().isEmpty()) {
             chargerRequestDTO.setStatId(UUID.randomUUID().toString());
         }
@@ -88,14 +102,20 @@ public class ChargerService {
     public void updateCharger(String statId, ChargerRequestDTO chargerRequestDTO) {
         Charger chargerToUpdate = chargerRepository.findById(statId)
                                 .orElseThrow(() -> new ChargerNotFoundException("해당 충전소를 찾을 수 없습니다. 충전소 식별번호 : " + statId));
-        
+
+        // 주소가 변경된 경우에만 위도와 경도를 재계산
+        if (!chargerToUpdate.getAddr().equals(chargerRequestDTO.getAddr())) {
+            Double[] coordinates = geocodingService.getCoordinates(chargerRequestDTO.getAddr());
+            chargerToUpdate.setLat(coordinates[0]);
+            chargerToUpdate.setLng(coordinates[1]);
+        }
+
+        // 충전소 정보 업데이트
         chargerToUpdate.setStatNm(chargerRequestDTO.getStatNm());
         chargerToUpdate.setAddr(chargerRequestDTO.getAddr());
         chargerToUpdate.setChargingFee(chargerRequestDTO.getChargingFee());
-        chargerToUpdate.setParkingFree(chargerRequestDTO.getOutput());
+        chargerToUpdate.setParkingFree(chargerRequestDTO.getParkingFree());
         chargerToUpdate.setChgerType(chargerRequestDTO.getChgerType());
-        chargerToUpdate.setLat(chargerRequestDTO.getLat());
-        chargerToUpdate.setLng(chargerRequestDTO.getLng());
 
         chargerRepository.save(chargerToUpdate);
     }
