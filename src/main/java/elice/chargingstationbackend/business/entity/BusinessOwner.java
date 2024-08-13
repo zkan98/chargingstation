@@ -1,89 +1,50 @@
 package elice.chargingstationbackend.business.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import elice.chargingstationbackend.charger.entity.Charger;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Size;
-import java.util.Set;
+import elice.chargingstationbackend.user.User;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.Set;
 
 @Getter
 @Setter
 @Entity
-public class BusinessOwner {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long ownerId;
+public class BusinessOwner extends User {
 
-    @Size(max = 50)
-    @Column(length = 50, nullable = false)
-    private String ownerName = "Default Name";  // Default value
-
-    @Email
-    @Size(max = 50)
-    @Column(length = 50, nullable = false)
-    private String ownerEmail = "default@example.com";  // Default value
-
-    @Size(max = 60)
-    @Column(length = 60, nullable = false)
-    private String ownerPassword = "defaultPassword";  // Default value
-
+    @NotNull
     @Column(name = "busi_id", nullable = false, unique = true)
-    private String busiId = "defaultBusiId";  // Default value
+    private String businessId;  // 사업자ID
 
+    @NotNull
     @Column(name = "busi_nm", nullable = false)
-    private String busiNm = "defaultBusiNm";  // Default value
+    private String businessName;  // 사업자 이름
 
+    @NotNull
     @Column(name = "busi_call", nullable = false)
-    private String busiCall = "defaultCall";  // Default value
+    private String businessCall;  // 사업자 연락처
 
     @Column(name = "bnm")
-    private String bnm = "defaultBnm";  // Default value
+    private String businessCorporateName;  // 법인명
 
     // OneToMany 관계 설정
     @OneToMany(mappedBy = "businessOwner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private Set<Charger> chargers;
 
-    @PrePersist
-    public void prePersist() {
-        if (this.ownerName == null) {
-            this.ownerName = "Default Name";
-        }
-        if (this.ownerEmail == null) {
-            this.ownerEmail = "default@example.com";
-        }
-        if (this.ownerPassword == null) {
-            this.ownerPassword = "defaultPassword";
-        }
-        if (this.busiId == null) {
-            this.busiId = "defaultBusiId";
-        }
-        if (this.busiNm == null) {
-            this.busiNm = "defaultBusiNm";
-        }
-        if (this.busiCall == null) {
-            this.busiCall = "defaultCall";
-        }
-        if (this.bnm == null) {
-            this.bnm = "defaultBnm";
-        }
-    }
-
+    // 비즈니스 오너의 상세 정보 업데이트 메서드
     public void updateDetails(BusinessOwner businessOwnerDetails) {
-        this.ownerName = businessOwnerDetails.getOwnerName();
-        this.ownerEmail = businessOwnerDetails.getOwnerEmail();
-        this.ownerPassword = businessOwnerDetails.getOwnerPassword();
-        this.busiId = businessOwnerDetails.getBusiId();
-        this.busiNm = businessOwnerDetails.getBusiNm();
-        this.busiCall = businessOwnerDetails.getBusiCall();
-        this.bnm = businessOwnerDetails.getBnm();
+        this.businessId = businessOwnerDetails.getBusinessId();
+        this.businessName = businessOwnerDetails.getBusinessName();
+        this.businessCall = businessOwnerDetails.getBusinessCall();
+        this.businessCorporateName = businessOwnerDetails.getBusinessCorporateName();
+
+        // User의 필드 업데이트
+        super.setUsername(businessOwnerDetails.getUsername());
+        super.setEmail(businessOwnerDetails.getEmail());
+        super.setPassword(businessOwnerDetails.getPassword());
     }
 }

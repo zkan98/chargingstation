@@ -23,7 +23,7 @@ public class ChargerListResponseDTO {
 
     public ChargerListResponseDTO(Charger charger) {
         this.statId = charger.getStatId();
-        this.businessName = charger.getBusinessOwner().getBusiNm();
+        this.businessName = charger.getBusinessOwner().getBusinessName();
         this.statNm = charger.getStatNm();
         this.addr = charger.getAddr();
         this.chgerType = charger.getChgerType();

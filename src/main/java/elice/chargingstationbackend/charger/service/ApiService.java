@@ -126,13 +126,20 @@ public class ApiService {
 
     private Charger createOrUpdateCharger(ChargerApiResponseDTO.Item item) {
         // BusinessOwner를 먼저 조회하거나 없으면 새로 생성
-        BusinessOwner businessOwner = businessOwnerRepository.findByBusiId(item.getBusiId())
+        BusinessOwner businessOwner = businessOwnerRepository.findByBusinessId(item.getBusiId())
             .orElseGet(() -> {
                 BusinessOwner newOwner = new BusinessOwner();
-                newOwner.setBusiId(item.getBusiId());
-                newOwner.setBusiNm(item.getBusiNm());
-                newOwner.setBusiCall(item.getBusiCall());
-                newOwner.setBnm(item.getBnm());
+                newOwner.setBusinessId(item.getBusiId());
+                newOwner.setBusinessName(item.getBusiNm());
+                newOwner.setBusinessCall(item.getBusiCall());
+                newOwner.setBusinessCorporateName(item.getBnm());
+
+                // User 엔티티에서 상속된 필드에 대한 초기화
+                newOwner.setEmail(item.getBusiId() + "@example.com"); // 사업자ID를 이메일에 사용 (실제 환경에 맞게 수정 필요)
+                newOwner.setPassword("defaultPassword"); // 필요에 따라 수정 (패스워드 암호화 필요)
+                newOwner.setUsername(item.getBusiNm()); // 사업자 이름을 username으로 사용
+                newOwner.setAdmin(false); // 기본적으로 관리자 아님
+
                 return businessOwnerRepository.save(newOwner);
             });
 
@@ -142,7 +149,7 @@ public class ApiService {
         return charger;
     }
 
-//    @Scheduled(fixedRate = 600000) // 10분마다 API 호출
+    // @Scheduled(fixedRate = 600000) // 10분마다 API 호출
 //    public void scheduledFetchAndSaveChargers() {
 //        processAndSaveChargers();
 //    }

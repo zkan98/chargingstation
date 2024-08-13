@@ -10,12 +10,13 @@ import elice.chargingstationbackend.business.exception.BusinessOwnerNotFoundExce
 import elice.chargingstationbackend.business.exception.RequestNotFoundException;
 import elice.chargingstationbackend.business.repository.ApprovalRequestRepository;
 import elice.chargingstationbackend.business.repository.BusinessOwnerRepository;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -104,14 +105,14 @@ public class ApprovalRequestService {
     }
 
     private void sendApprovalEmail(ApprovalRequest request) {
-        String to = request.getBusinessOwner().getOwnerEmail();
+        String to = request.getBusinessOwner().getEmail();
         String subject = REQUEST_APPROVE_SUBJECT;
         String text = REQUEST_APPROVE_TEXT;
         emailService.sendSimpleMessage(to, subject, text);
     }
 
     private void sendRejectionEmail(ApprovalRequest request) {
-        String to = request.getBusinessOwner().getOwnerEmail();
+        String to = request.getBusinessOwner().getEmail(); // 수정된 부분: getOwnerEmail() -> getEmail()
         String subject = REQUEST_REJECT_SUBJECT;
         String text = REQUEST_REJECT_TEXT;
         emailService.sendSimpleMessage(to, subject, text);
