@@ -62,6 +62,11 @@ public class ChargerSpecification implements Specification<Charger> {
         }
 
         // 모든 조건을 결합
-        return criteriaBuilder.and(distancePredicate, finalPredicate);
+        query.where(criteriaBuilder.and(distancePredicate, finalPredicate));
+
+        // 거리 기준으로 정렬
+        query.orderBy(criteriaBuilder.asc(distance));
+
+        return query.getRestriction();
     }
 }
