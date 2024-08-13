@@ -3,7 +3,9 @@ package elice.chargingstationbackend.user.service;
 import elice.chargingstationbackend.user.User;
 import elice.chargingstationbackend.user.UserDto;
 import elice.chargingstationbackend.user.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -11,6 +13,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -69,6 +73,36 @@ public class UserService {
 
         return auth;
     }
+
+    @Transactional
+    public User updateUser(String email, UserDto userDTO) {
+        Optional<User> opUser = userRepository.findByEmail(email);
+        if (opUser.isEmpty()) {
+            throw new UsernameNotFoundException("User not found with email: " + email);
+        }
+        User user = opUser.get();
+
+        user.setUsername(userDTO.getUsername());
+        user.setEmail(userDTO.getEmail());
+        user.setPassword(userDTO.getPassword());
+        user.setAdmin(userDTO.isAdmin());
+        user.setAddress(userDTO.getAddress());
+        user.setPhoneNumber(userDTO.getPhoneNumber());
+        user.setConnectorType(userDTO.getConnectorType());
+        return userRepository.save(user);
+    }
+
+
+    @Transactional
+    public void deleteUser(String email) {
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if (!optionalUser.isPresent()) {
+            throw new UsernameNotFoundException("User not found with email: " + email);
+        }
+        userRepository.deleteByEmail(email);
+
+    }
+
 
 
 
