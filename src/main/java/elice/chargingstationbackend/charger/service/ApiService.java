@@ -62,6 +62,8 @@ public class ApiService {
 
         String response = sb.toString();
 
+        System.out.println("API 응답: " + response);
+
         // XML을 JSON으로 변환
         response = convertXmlToJsonIfNecessary(response);
 
