@@ -27,8 +27,8 @@ public class ChargerService {
 
     // 주변 충전소 리스트 자동 조회(+필터)
     public List<ChargerListResponseDTO> getNearbyChargerList(LocationDTO location, List<String> chgerType,
-                                                             List<String> output, Double chargingFee,
-                                                             String parkingFree, List<String> kind, List<Long> ownerIds) {
+        List<String> output, Double chargingFee,
+        String parkingFree, List<String> kind, List<Long> ownerIds) {
         // 필터 값이 제공되지 않은 경우, 빈 리스트를 null로 변환
         chgerType = (chgerType == null || chgerType.isEmpty()) ? null : chgerType;
         output = (output == null || output.isEmpty()) ? null : output;
@@ -39,32 +39,32 @@ public class ChargerService {
 
         // Specification 생성
         Specification<Charger> spec = new ChargerSpecification(
-                location.getUserLatitude(),
-                location.getUserLongitude(),
-                chgerType,
-                output,
-                chargingFee,
-                parkingFree,
-                kind,
-                ownerIds
+            location.getUserLatitude(),
+            location.getUserLongitude(),
+            chgerType,
+            output,
+            chargingFee,
+            parkingFree,
+            kind,
+            ownerIds
         );
 
         // Repository 호출
         List<Charger> nearByChargerList = chargerRepository.findAll(spec);
 
         return nearByChargerList.stream()
-                .limit(150)
-                .map(ChargerListResponseDTO::new)
-                .collect(Collectors.toList());
+            .limit(150)
+            .map(ChargerListResponseDTO::new)
+            .collect(Collectors.toList());
     }
-    
+
     // 충전소 검색(충전소 이름, 장소)
     public List<ChargerListResponseDTO> searchCharger(String searchTerm) {
         List<Charger> resultsList = chargerRepository.searchByChargerNameOrAddress(searchTerm);
 
         List<ChargerListResponseDTO> responseDTOList = resultsList.stream()
-        .map(ChargerListResponseDTO::new)
-        .collect(Collectors.toList());
+            .map(ChargerListResponseDTO::new)
+            .collect(Collectors.toList());
 
         return responseDTOList;
     }
@@ -72,26 +72,24 @@ public class ChargerService {
     // 충전소 세부 조회
     public ChargerDetailResponseDTO getChagerDetail(String statId) {
         Charger chargerDetail = chargerRepository.findById(statId)
-                                        .orElseThrow(() -> new ChargerNotFoundException("해당 충전소를 찾을 수 없습니다. 충전소 식별번호 : " + statId));
+            .orElseThrow(() -> new ChargerNotFoundException("해당 충전소를 찾을 수 없습니다. 충전소 식별번호 : " + statId));
         return new ChargerDetailResponseDTO(chargerDetail);
     }
 
     // 충전소 추가
     @Transactional
     public String addCharger(ChargerRequestDTO chargerRequestDTO) {
-//         BusinessOwner accessOwnerId = businessOwnerRepository.findById(ownerId)
-//                                 .orElseThrow(() -> new BusinessOwnerNotFoundException(ownerId));
-
         // 주소를 위도와 경도로 변환
-        Double[] coordinates = geocodingService.getCoordinates(chargerRequestDTO.getAddr());
+        Double[] coordinates = geocodingService.getCoordinates(chargerRequestDTO.getAddress());
         chargerRequestDTO.setLat(coordinates[0]);
         chargerRequestDTO.setLng(coordinates[1]);
 
-
-        if (chargerRequestDTO.getStatId() == null || chargerRequestDTO.getStatId().isEmpty()) {
-            chargerRequestDTO.setStatId(UUID.randomUUID().toString());
+        // UUID로 충전소 ID 생성 (기존 ID가 없을 때만)
+        if (chargerRequestDTO.getId() == null || chargerRequestDTO.getId().isEmpty()) {
+            chargerRequestDTO.setId(UUID.randomUUID().toString());
         }
 
+        // 새로운 Charger 엔티티 생성
         Charger newCharger = chargerRequestDTO.toEntity();
         chargerRepository.save(newCharger);
 
@@ -102,21 +100,24 @@ public class ChargerService {
     @Transactional
     public void updateCharger(String statId, ChargerRequestDTO chargerRequestDTO) {
         Charger chargerToUpdate = chargerRepository.findById(statId)
-                                .orElseThrow(() -> new ChargerNotFoundException("해당 충전소를 찾을 수 없습니다. 충전소 식별번호 : " + statId));
+            .orElseThrow(() -> new ChargerNotFoundException("해당 충전소를 찾을 수 없습니다. 충전소 식별번호 : " + statId));
 
         // 주소가 변경된 경우에만 위도와 경도를 재계산
-        if (!chargerToUpdate.getAddr().equals(chargerRequestDTO.getAddr())) {
-            Double[] coordinates = geocodingService.getCoordinates(chargerRequestDTO.getAddr());
+        if (!chargerToUpdate.getAddr().equals(chargerRequestDTO.getAddress())) {
+            Double[] coordinates = geocodingService.getCoordinates(chargerRequestDTO.getAddress());
             chargerToUpdate.setLat(coordinates[0]);
             chargerToUpdate.setLng(coordinates[1]);
         }
 
         // 충전소 정보 업데이트
-        chargerToUpdate.setStatNm(chargerRequestDTO.getStatNm());
-        chargerToUpdate.setAddr(chargerRequestDTO.getAddr());
-        chargerToUpdate.setChargingFee(chargerRequestDTO.getChargingFee());
-        chargerToUpdate.setParkingFree(chargerRequestDTO.getParkingFree());
-        chargerToUpdate.setChgerType(chargerRequestDTO.getChgerType());
+        chargerToUpdate.setStatNm(chargerRequestDTO.getName());
+        chargerToUpdate.setAddr(chargerRequestDTO.getAddress());
+        chargerToUpdate.setDetailAddr(chargerRequestDTO.getDetailAddress());
+        chargerToUpdate.setChargingFee(chargerRequestDTO.getPrice() != null ? Double.parseDouble(chargerRequestDTO.getPrice()) : null);
+        chargerToUpdate.setSlot(chargerRequestDTO.getSlot() != null ? Integer.parseInt(chargerRequestDTO.getSlot()) : null);
+        chargerToUpdate.setOutput(chargerRequestDTO.getSpeed());
+        chargerToUpdate.setChgerType(chargerRequestDTO.getConnector());
+        chargerToUpdate.setParkingFree(chargerRequestDTO.getParkingFee());
 
         chargerRepository.save(chargerToUpdate);
     }
@@ -125,8 +126,8 @@ public class ChargerService {
     @Transactional
     public void deleteCharger(String statId) {
         Charger chargerToDelete = chargerRepository.findById(statId)
-                                .orElseThrow(() -> new ChargerNotFoundException("해당 충전소를 찾을 수 없습니다. 충전소 식별번호 : " + statId));
-        
+            .orElseThrow(() -> new ChargerNotFoundException("해당 충전소를 찾을 수 없습니다. 충전소 식별번호 : " + statId));
+
         chargerRepository.delete(chargerToDelete);
     }
 }

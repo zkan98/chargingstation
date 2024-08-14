@@ -126,18 +126,18 @@ public class ApiService {
 
     private Charger createOrUpdateCharger(ChargerApiResponseDTO.Item item) {
         // BusinessOwner를 먼저 조회하거나 없으면 새로 생성
-        BusinessOwner businessOwner = businessOwnerRepository.findByBusinessId(item.getBusiId())
+        BusinessOwner businessOwner = businessOwnerRepository.findByBusinessId(item.getBusinessId())
             .orElseGet(() -> {
                 BusinessOwner newOwner = new BusinessOwner();
-                newOwner.setBusinessId(item.getBusiId());
-                newOwner.setBusinessName(item.getBusiNm());
-                newOwner.setBusinessCall(item.getBusiCall());
-                newOwner.setBusinessCorporateName(item.getBnm());
+                newOwner.setBusinessId(item.getBusinessId());
+                newOwner.setBusinessName(item.getBusinessName());
+                newOwner.setBusinessCall(item.getBusinessCall());
+                newOwner.setBusinessCorporateName(item.getBusinessNameAlias());
 
                 // User 엔티티에서 상속된 필드에 대한 초기화
-                newOwner.setEmail(item.getBusiId() + "@example.com"); // 사업자ID를 이메일에 사용 (실제 환경에 맞게 수정 필요)
+                newOwner.setEmail(item.getBusinessId() + "@example.com"); // 사업자ID를 이메일에 사용 (실제 환경에 맞게 수정 필요)
                 newOwner.setPassword("defaultPassword"); // 필요에 따라 수정 (패스워드 암호화 필요)
-                newOwner.setUsername(item.getBusiNm()); // 사업자 이름을 username으로 사용
+                newOwner.setUsername(item.getBusinessName()); // 사업자 이름을 username으로 사용
                 newOwner.setAdmin(false); // 기본적으로 관리자 아님
 
                 return businessOwnerRepository.save(newOwner);

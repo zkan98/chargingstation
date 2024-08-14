@@ -9,30 +9,24 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChargerListResponseDTO {
-    private String statId;
-    private String busiNm;
-    private String statNm;
-    private String addr;
-    private String chgerType;
-    private String output;
-    private Double chargingFee;
-    private String parkingFree;
-    private String stat;
-    private Double lat;
-    private Double lng;
+    private String id;           // 프론트엔드의 id에 해당
+    private String name;         // 프론트엔드의 name에 해당
+    private String address;      // 프론트엔드의 address에 해당
+    private String connector;    // 프론트엔드의 connector에 해당
+    private String slot;         // 프론트엔드의 slot에 해당
+    private String speed;        // 프론트엔드의 speed에 해당
+    private String fee;          // 프론트엔드의 fee에 해당
+    private String parkingFee;   // 프론트엔드의 parkingFee에 해당
 
+    // Charger 엔티티로부터 DTO 생성
     public ChargerListResponseDTO(Charger charger) {
-        this.statId = charger.getStatId();
-        this.busiNm = charger.getBusinessOwner().getBusinessName();
-        this.statNm = charger.getStatNm();
-        this.addr = charger.getAddr();
-        this.chgerType = charger.getChgerType();
-        this.output = charger.getOutput();
-        this.chargingFee = charger.getChargingFee();
-        this.parkingFree = charger.getParkingFree();
-        this.stat = charger.getStat();
-        this.lat = charger.getLat();
-        this.lng = charger.getLng();
+        this.id = charger.getStatId();
+        this.name = charger.getStatNm();
+        this.address = charger.getAddr();
+        this.connector = charger.getChgerType();
+        this.slot = charger.getSlot() != null ? charger.getSlot().toString() : null; // Integer를 String으로 변환
+        this.speed = charger.getOutput();
+        this.fee = charger.getChargingFee() != null ? charger.getChargingFee().toString() : null; // Double을 String으로 변환
+        this.parkingFee = charger.getParkingFree();
     }
-
 }

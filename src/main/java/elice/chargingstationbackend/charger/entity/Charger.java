@@ -32,6 +32,9 @@ public class Charger {
     @Column(name = "addr")
     private String addr;
 
+    @Column(name = "detail_addr")
+    private String detailAddr;  // 추가된 필드
+
     @Column(name = "lat")
     private Double lat;
 
@@ -80,4 +83,7 @@ public class Charger {
 
     @Column(name = "charging_fee")
     private Double chargingFee;
+
+    @Column(name = "slot")
+    private Integer slot;  // 추가된 필드
 }
