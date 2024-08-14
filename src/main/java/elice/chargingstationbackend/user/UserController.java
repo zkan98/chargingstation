@@ -260,6 +260,11 @@ public class UserController {
 
 
 
+    @GetMapping("/list")
+    public ResponseEntity<List<UserDto>> getUserList() {
+        List<UserDto> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
 
 
 
