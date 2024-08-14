@@ -22,6 +22,8 @@ public class GeocodingService {
                 .toUriString();
 
         String response = restTemplate.getForObject(url, String.class);
+        System.out.println("API Response: " + response);
+
         JsonNode jsonNode = parseJson(response);
 
         if (jsonNode != null && jsonNode.path("status").asText().equals("OK")) {
@@ -30,7 +32,7 @@ public class GeocodingService {
             double lng = location.path("lng").asDouble();
             return new Double[]{lat, lng};
         } else {
-            throw new RuntimeException("Geocoding API request failed");
+            throw new RuntimeException("Geocoding API 요청 실패");
         }
     }
 
@@ -38,7 +40,7 @@ public class GeocodingService {
         try {
             return new ObjectMapper().readTree(response);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse JSON response", e);
+            throw new RuntimeException("JSON 변환실패", e);
         }
     }
 }

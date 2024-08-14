@@ -18,6 +18,8 @@ public class ChargerDetailResponseDTO {
     private String chgerType;
     private Double chargingFee;
     private String stat;
+    private Double lat;
+    private Double lng;
 
     public ChargerDetailResponseDTO(Charger charger) {
         this.busiNm = charger.getBusinessOwner().getBusiNm();
@@ -29,5 +31,7 @@ public class ChargerDetailResponseDTO {
         this.chgerType = charger.getChgerType();
         this.chargingFee = charger.getChargingFee();
         this.stat = charger.getStat();
+        this.lat = charger.getLat();
+        this.lng = charger.getLng();
     }
 }
