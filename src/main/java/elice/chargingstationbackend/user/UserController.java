@@ -38,24 +38,25 @@ public class UserController {
     private final CustomUserDetailsService customUserDetailsService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenService refreshTokenService;
+    private final JwtUtil jwtUtil;
 
 
 
-    private User convertToUser(CustomUser customUser, Collection<? extends GrantedAuthority> authorities) {
-        User user = new User();
-        user.setEmail(customUser.getUsername());
-        user.setPassword(customUser.getPassword());
-        user.setUsername(customUser.getNickname());
-        user.setAuthorities((Collection<GrantedAuthority>) authorities);
-        return user;
-    }
+//    private User convertToUser(CustomUser customUser, Collection<? extends GrantedAuthority> authorities) {
+//        User user = new User();
+//        user.setEmail(customUser.getUsername());
+//        user.setPassword(customUser.getPassword());
+//        user.setUsername(customUser.getNickname());
+//        user.setAuthorities((Collection<GrantedAuthority>) authorities);
+//
+//        return user;
+//    }
 
-
-    @GetMapping("/login")
-    public String loginPage () { return "/login.html";}
-
-    @GetMapping("/register")
-    public String registerPage() { return "/register.html"; }
+//    @GetMapping("/login")
+//    public String loginPage () { return "/login.html";}
+//
+//    @GetMapping("/register")
+//    public String registerPage() { return "/register.html"; }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserDto UserDto) {
@@ -68,14 +69,14 @@ public class UserController {
         }
     }
 
-    @GetMapping("/myPage")
-    @ResponseBody
-    public String myPage(Authentication auth) {
-
-        var user = (CustomUser) auth.getPrincipal();
-
-        return "";
-    }
+//    @GetMapping("/myPage")
+//    @ResponseBody
+//    public String myPage(Authentication auth) {
+//
+//        var user = (CustomUser) auth.getPrincipal();
+//
+//        return "";
+//    }
 
     /*  리액트로 구성하는 프론트의 경우 아래와 같이 JSON 형식으로 정보를 짜서 보내주자.
     @GetMapping("/api/user")
@@ -91,6 +92,35 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
      */
+    @GetMapping("/info")
+    public ResponseEntity<UserDto> getUserInfo(@RequestHeader("Authorization") String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            String jwt = token.substring(7);
+            try {
+                String email = jwtUtil.getEmailFromToken(jwt);
+                if (email != null) {
+                    Optional<User> optionalUser = userRepository.findByEmail(email);
+                    if (optionalUser.isPresent()) {
+                        User user = optionalUser.get();
+                        UserDto userDTO = new UserDto();
+                        userDTO.setId(user.getId());
+                        userDTO.setEmail(user.getEmail());
+                        userDTO.setUsername(user.getUsername());
+                        userDTO.setAdmin(user.isAdmin());
+                        userDTO.setAddress(user.getAddress());
+                        userDTO.setPhoneNumber(user.getPhoneNumber());
+                        userDTO.setConnectorType(user.getConnectorType());
+                        return ResponseEntity.ok(userDTO);
+                    } else {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                    }
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
 
     @PostMapping("/login")
     @ResponseBody
@@ -102,12 +132,17 @@ public class UserController {
             Authentication auth = userService.authenticate(email, password);
             Object principal = auth.getPrincipal();
 
-            if (principal instanceof CustomUser) {
-                CustomUser customUser = (CustomUser) principal;
-                User user = convertToUser(customUser, auth.getAuthorities());
+            if (principal instanceof CustomUser customUser) {
+
+                User user = userRepository.findByEmail(customUser.getUsername())
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + customUser.getUsername()));
 
                 String accessToken = JwtUtil.createAccessToken(auth);
+
                 RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+                //있는지 확인하고 있으면 지우고 만들고 없으며 그냥 생성
+                // ㄱ 컴에서 접속중, refreshToken 존재, 이때 ㄴ 컴에서 접속시 refreshToken 이 있는데 또 생성
+                // 왜? ㄴ컴의 쿠키에는 토큰이 없으니까
 
                 // 쿠키에 Refresh Token 저장
                 Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken.getToken());
@@ -187,6 +222,46 @@ public class UserController {
 
         return ResponseEntity.ok(responseData);
     }
+
+    @PutMapping("/mypage/update")
+    public ResponseEntity<UserDto> updateUser(@RequestBody UserDto userDTO, @RequestHeader("Authorization") String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            String jwt = token.substring(7);
+            try {
+                String email = jwtUtil.getEmailFromToken(jwt);
+                if (email != null) {
+                    User updatedUser = userService.updateUser(email, userDTO);
+                    return ResponseEntity.ok(userDTO);
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+
+    @DeleteMapping("/mypage/delete")
+    public ResponseEntity<Void> deleteUser(@RequestHeader("Authorization") String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            String jwt = token.substring(7);
+            try {
+                String email = jwtUtil.getEmailFromToken(jwt);
+                if (email != null) {
+                    userService.deleteUser(email);
+                    return ResponseEntity.noContent().build();
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+
+
+
+
 
 
 
