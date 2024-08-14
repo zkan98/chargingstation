@@ -29,12 +29,15 @@ public class ChargerController {
     // 주변 충전소 리스트 자동 조회
     @PostMapping("/list")
     public ResponseEntity<List<ChargerListResponseDTO>> getNearbyChargerList(@RequestBody LocationDTO location,
-                                                                             @RequestBody(required = false) ChargerFilterDTO filter) {
-        if (filter == null) {
-            filter = new ChargerFilterDTO(); // 빈 필터 객체로 초기화
-        }
+                                                                             @RequestParam(required = false) List<String> chgerType,
+                                                                             @RequestParam(required = false) List<String> output,
+                                                                             @RequestParam(required = false) Double chargingFee,
+                                                                             @RequestParam(required = false) String parkingFree,
+                                                                             @RequestParam(required = false) List<String> kind,
+                                                                             @RequestParam(required = false) List<Long> ownerIds) {
 
-        List<ChargerListResponseDTO> nearByChargerList = chargerService.getNearbyChargerList(location, filter);
+
+        List<ChargerListResponseDTO> nearByChargerList = chargerService.getNearbyChargerList(location, chgerType, output, chargingFee, parkingFree, kind, ownerIds);
 
         return ResponseEntity.ok().body(nearByChargerList);
     }

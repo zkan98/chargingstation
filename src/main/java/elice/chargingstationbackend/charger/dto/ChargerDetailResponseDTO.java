@@ -13,6 +13,7 @@ public class ChargerDetailResponseDTO {
     private String busiNm;
     private String busiCall;
     private String statNm;
+    private String output;
     private String addr;
     private String chgerType;
     private Double chargingFee;
@@ -23,6 +24,7 @@ public class ChargerDetailResponseDTO {
         this.busiCall = charger.getBusinessOwner().getBusinessCall();
         this.statId = charger.getStatId();
         this.statNm = charger.getStatNm();
+        this.output = charger.getOutput();
         this.addr = charger.getAddr();
         this.chgerType = charger.getChgerType();
         this.chargingFee = charger.getChargingFee();
