@@ -6,6 +6,7 @@ import elice.chargingstationbackend.charger.entity.Charger;
 import elice.chargingstationbackend.charger.repository.ChargerRepository;
 import elice.chargingstationbackend.business.entity.BusinessOwner;
 import elice.chargingstationbackend.business.repository.BusinessOwnerRepository;
+import elice.chargingstationbackend.user.Role;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ApiService {
+
     private final ChargerRepository chargerRepository;
     private final BusinessOwnerRepository businessOwnerRepository;
 
@@ -37,11 +39,18 @@ public class ApiService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public String fetchChargerData(int pageNo, int numOfRows) throws IOException {
-        StringBuilder urlBuilder = new StringBuilder("http://apis.data.go.kr/B552584/EvCharger/getChargerInfo");
-        urlBuilder.append("?" + URLEncoder.encode("serviceKey", "UTF-8") + "=" + URLEncoder.encode(serviceKey, "UTF-8"));
-        urlBuilder.append("&" + URLEncoder.encode("pageNo", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(pageNo), "UTF-8"));
-        urlBuilder.append("&" + URLEncoder.encode("numOfRows", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(numOfRows), "UTF-8"));
-        urlBuilder.append("&" + URLEncoder.encode("dataType", "UTF-8") + "=" + URLEncoder.encode("JSON", "UTF-8"));
+        StringBuilder urlBuilder = new StringBuilder(
+            "http://apis.data.go.kr/B552584/EvCharger/getChargerInfo");
+        urlBuilder.append(
+            "?" + URLEncoder.encode("serviceKey", "UTF-8") + "=" + URLEncoder.encode(serviceKey,
+                "UTF-8"));
+        urlBuilder.append("&" + URLEncoder.encode("pageNo", "UTF-8") + "=" + URLEncoder.encode(
+            String.valueOf(pageNo), "UTF-8"));
+        urlBuilder.append("&" + URLEncoder.encode("numOfRows", "UTF-8") + "=" + URLEncoder.encode(
+            String.valueOf(numOfRows), "UTF-8"));
+        urlBuilder.append(
+            "&" + URLEncoder.encode("dataType", "UTF-8") + "=" + URLEncoder.encode("JSON",
+                "UTF-8"));
 
         URL url = new URL(urlBuilder.toString());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -96,7 +105,8 @@ public class ApiService {
         while (pageNo <= maxPages) {
             try {
                 String jsonResponse = fetchChargerData(pageNo, numOfRows);
-                ChargerApiResponseDTO dto = objectMapper.readValue(jsonResponse, ChargerApiResponseDTO.class);
+                ChargerApiResponseDTO dto = objectMapper.readValue(jsonResponse,
+                    ChargerApiResponseDTO.class);
                 ChargerApiResponseDTO.Items items = dto.getItems();
 
                 if (items == null || items.getItemList() == null || items.getItemList().isEmpty()) {
@@ -128,7 +138,8 @@ public class ApiService {
         }
     }
 
-    private Charger createOrUpdateCharger(ChargerApiResponseDTO.Item item, Map<String, BusinessOwner> ownerCache) {
+    private Charger createOrUpdateCharger(ChargerApiResponseDTO.Item item,
+        Map<String, BusinessOwner> ownerCache) {
         // BusinessOwner를 먼저 조회하거나 없으면 새로 생성
         BusinessOwner businessOwner = ownerCache.computeIfAbsent(item.getBusiId(), busiId -> {
             return businessOwnerRepository.findByBusinessId(busiId)
@@ -143,7 +154,9 @@ public class ApiService {
                     newOwner.setEmail(item.getBusiId() + "@example.com");
                     newOwner.setPassword("defaultPassword");
                     newOwner.setUsername(item.getBusiNm());
-                    newOwner.setAdmin(false);
+
+                    // 기본적으로 비즈니스 오너 역할을 부여
+                    newOwner.getRoles().add(Role.ROLE_BUSINESS_OWNER);
 
                     return businessOwnerRepository.save(newOwner);
                 });
