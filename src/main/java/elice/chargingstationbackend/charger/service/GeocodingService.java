@@ -1,44 +1,50 @@
 package elice.chargingstationbackend.charger.service;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class GeocodingService {
 
-    @Value("${google.maps.api.key}")
-    private String apiKey;
-
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Value("${kakao.maps.api.key}")
+    private String apiKey; // 발급받은 API Key
 
     public Double[] getCoordinates(String address) {
-        String url = UriComponentsBuilder.fromHttpUrl("https://maps.googleapis.com/maps/api/geocode/json")
-                .queryParam("address", address)
-                .queryParam("key", apiKey)
-                .toUriString();
+        String url = "https://dapi.kakao.com/v2/local/search/address.json?query=" + address;
 
-        String response = restTemplate.getForObject(url, String.class);
-        JsonNode jsonNode = parseJson(response);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "KakaoAK " + apiKey);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        if (jsonNode != null && jsonNode.path("status").asText().equals("OK")) {
-            JsonNode location = jsonNode.path("results").get(0).path("geometry").path("location");
-            double lat = location.path("lat").asDouble();
-            double lng = location.path("lng").asDouble();
-            return new Double[]{lat, lng};
-        } else {
-            throw new RuntimeException("Geocoding API request failed");
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+        String response = responseEntity.getBody();
+
+        if (response != null) {
+            JsonNode jsonNode = parseJson(response);
+
+            if (jsonNode != null && jsonNode.path("documents").size() > 0) {
+                JsonNode addressNode = jsonNode.path("documents").get(0).path("address");
+                double lng = addressNode.path("x").asDouble();
+                double lat = addressNode.path("y").asDouble();
+                return new Double[]{lat, lng};
+            }
         }
+        return null;
     }
 
     private JsonNode parseJson(String response) {
         try {
             return new ObjectMapper().readTree(response);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse JSON response", e);
+            throw new RuntimeException("JSON 변환 실패", e);
         }
     }
 }
