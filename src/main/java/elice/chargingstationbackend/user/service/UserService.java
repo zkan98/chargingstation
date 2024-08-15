@@ -1,12 +1,12 @@
 package elice.chargingstationbackend.user.service;
 
+import elice.chargingstationbackend.business.entity.BusinessOwner;
+import elice.chargingstationbackend.business.service.BusinessOwnerService;
+import elice.chargingstationbackend.user.Role;
 import elice.chargingstationbackend.user.User;
 import elice.chargingstationbackend.user.UserDto;
 import elice.chargingstationbackend.user.UserRepository;
-import elice.chargingstationbackend.user.Role;
 import jakarta.transaction.Transactional;
-import java.util.Collections;
-import java.util.HashSet;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -16,6 +16,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,6 +29,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final BusinessOwnerService businessOwnerService;
 
     public boolean existingEmail(String email) {
         return userRepository.findByEmail(email).isPresent();
@@ -49,22 +52,34 @@ public class UserService {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
 
-        User user = new User();
-        user.setEmail(userDto.getEmail());
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user.setUsername(userDto.getUsername());
-        user.setAddress(userDto.getAddress());
-        user.setPhoneNumber(userDto.getPhoneNumber());
-        user.setConnectorType(userDto.getConnectorType());
+        // 비즈니스 오너인지 확인
+        if ("business".equalsIgnoreCase(userDto.getUserType())) {
+            BusinessOwner businessOwner = new BusinessOwner();
+            businessOwner.setEmail(userDto.getEmail());
+            businessOwner.setPassword(passwordEncoder.encode(userDto.getPassword()));
+            businessOwner.setUsername(userDto.getUsername());
+            businessOwner.setAddress(userDto.getAddress());
+            businessOwner.setPhoneNumber(userDto.getPhoneNumber());
+            businessOwner.setConnectorType(userDto.getConnectorType());
 
-        // roles가 null이면 초기화
-        if (userDto.getRoles() == null) {
-            userDto.setRoles(new HashSet<>(Collections.singletonList(Role.ROLE_USER))); // 기본값 설정
+            businessOwner.setBusinessId(userDto.getBusinessId());
+            businessOwner.setBusinessName(userDto.getBusinessName());
+            businessOwner.setBusinessCall(userDto.getBusinessCall());
+            businessOwner.setBusinessCorporateName(userDto.getBusinessCorporateName());
+
+            businessOwnerService.registerBusinessOwner(businessOwner); // 비즈니스 오너 서비스 호출
+        } else {
+            User user = new User();
+            user.setEmail(userDto.getEmail());
+            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+            user.setUsername(userDto.getUsername());
+            user.setAddress(userDto.getAddress());
+            user.setPhoneNumber(userDto.getPhoneNumber());
+            user.setConnectorType(userDto.getConnectorType());
+            user.setRoles(new HashSet<>(Collections.singletonList(Role.ROLE_USER)));
+
+            userRepository.save(user);
         }
-
-        user.setRoles(new HashSet<>(userDto.getRoles()));
-
-        userRepository.save(user);
     }
 
 
@@ -123,7 +138,7 @@ public class UserService {
         userDto.setAddress(user.getAddress());
         userDto.setPhoneNumber(user.getPhoneNumber());
         userDto.setConnectorType(user.getConnectorType());
-        userDto.setRoles(user.getRoles()); // User의 역할들을 설정
+        userDto.setRoles(user.getRoles());
         return userDto;
     }
 }

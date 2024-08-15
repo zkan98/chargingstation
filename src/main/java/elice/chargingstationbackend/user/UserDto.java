@@ -1,14 +1,12 @@
 package elice.chargingstationbackend.user;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Set;
 
 @Getter
 @Setter
-@NoArgsConstructor
 public class UserDto {
     private Long id;
     private String email;
@@ -17,5 +15,12 @@ public class UserDto {
     private String address;
     private String phoneNumber;
     private User.ConnectorType connectorType;
-    private Set<Role> roles; // 추가된 역할 필드
+    private Set<Role> roles;
+    private String userType;
+
+    // 비즈니스 오너 관련 필드 추가
+    private String businessId;
+    private String businessName;
+    private String businessCall;
+    private String businessCorporateName;
 }

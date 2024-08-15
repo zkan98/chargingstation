@@ -1,9 +1,9 @@
 package elice.chargingstationbackend.user;
 
 import elice.chargingstationbackend.user.security.JwtUtil;
+import elice.chargingstationbackend.user.service.CustomUserDetailsService;
 import elice.chargingstationbackend.user.service.RefreshTokenService;
 import elice.chargingstationbackend.user.service.UserService;
-import elice.chargingstationbackend.user.service.CustomUserDetailsService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,6 +42,13 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserDto userDto) {
         try {
+            // 사용자 타입에 따라 역할 설정
+            if ("business".equalsIgnoreCase(userDto.getUserType())) {
+                userDto.setRoles(Collections.singleton(Role.ROLE_BUSINESS));
+            } else {
+                userDto.setRoles(Collections.singleton(Role.ROLE_USER));
+            }
+
             userService.createUser(userDto);
             return ResponseEntity.ok(Collections.singletonMap("message", "회원 가입이 완료되었습니다."));
         } catch (IllegalArgumentException e) {
@@ -49,6 +56,7 @@ public class UserController {
                 .body(Collections.singletonMap("reason", e.getMessage()));
         }
     }
+
 
     @GetMapping("/info")
     public ResponseEntity<UserDto> getUserInfo(@RequestHeader("Authorization") String token) {
@@ -67,7 +75,7 @@ public class UserController {
                         userDTO.setAddress(user.getAddress());
                         userDTO.setPhoneNumber(user.getPhoneNumber());
                         userDTO.setConnectorType(user.getConnectorType());
-                        userDTO.setRoles(user.getRoles()); // 역할 설정
+                        userDTO.setRoles(user.getRoles());
                         return ResponseEntity.ok(userDTO);
                     } else {
                         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -100,7 +108,7 @@ public class UserController {
                 RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
                 Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken.getToken());
-                refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7일 유효기간
+                refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
                 refreshTokenCookie.setHttpOnly(true);
                 refreshTokenCookie.setPath("/");
                 response.addCookie(refreshTokenCookie);
@@ -158,7 +166,6 @@ public class UserController {
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
 
-        // 쿠키 무효화
         Cookie refreshTokenCookie = new Cookie("refreshToken", null);
         refreshTokenCookie.setMaxAge(0);
         refreshTokenCookie.setHttpOnly(true);

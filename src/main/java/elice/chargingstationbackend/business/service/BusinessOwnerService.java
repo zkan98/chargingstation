@@ -20,12 +20,11 @@ public class BusinessOwnerService {
 
     public BusinessOwner registerBusinessOwner(BusinessOwner businessOwner) {
         // 역할 추가
-        businessOwner.getRoles().add(Role.ROLE_BUSINESS_OWNER);
-        // User 엔티티를 저장
-        User user = userRepository.save(businessOwner);
-        businessOwner.setId(user.getId()); // User ID를 설정
+        businessOwner.getRoles().add(Role.ROLE_BUSINESS);
+        // BusinessOwner 엔티티를 직접 저장
         return businessOwnerRepository.save(businessOwner);
     }
+
 
     public BusinessOwner getBusinessOwner(Long ownerId) {
         return businessOwnerRepository.findById(ownerId)
