@@ -39,52 +39,52 @@ public class ChargerApiResponseDTO {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Item {
         @JsonProperty("statNm")
-        private String name;          // 프론트엔드의 name에 해당
+        private String statNm;
 
         @JsonProperty("statId")
-        private String id;            // 프론트엔드의 id에 해당
+        private String statId;
 
         @JsonProperty("chgerId")
-        private String connectorId;   // chgerId로 일치 (필요에 따라 이름 변경 가능)
+        private String chgerId;
 
         @JsonProperty("chgerType")
-        private String connector;     // 프론트엔드의 connector에 해당
+        private String chgerType;
 
         @JsonProperty("addr")
-        private String address;       // 프론트엔드의 address에 해당
+        private String addr;
 
         @JsonProperty("lat")
-        private Double latitude;
+        private Double lat;
 
         @JsonProperty("lng")
-        private Double longitude;
+        private Double lng;
 
         @JsonProperty("useTime")
         private String useTime;
 
         @JsonProperty("busiId")
-        private String businessId;
+        private String busiId;
 
         @JsonProperty("bnm")
-        private String businessName;  // 프론트엔드의 businessName에 해당
+        private String bnm;
 
         @JsonProperty("busiNm")
-        private String businessNameAlias; // Alias for businessName if needed
+        private String busiNm;
 
         @JsonProperty("busiCall")
-        private String businessCall;  // 프론트엔드의 businessCall에 해당
+        private String busiCall;
 
         @JsonProperty("stat")
-        private String status;        // 프론트엔드의 status에 해당
+        private String stat;
 
         @JsonProperty("statUpdDt")
-        private String statusUpdateDate;
+        private String statUpdDt;
 
         @JsonProperty("powerType")
         private String powerType;
 
         @JsonProperty("output")
-        private String speed;         // 프론트엔드의 speed에 해당
+        private String output;
 
         @JsonProperty("method")
         private String method;
@@ -102,10 +102,10 @@ public class ChargerApiResponseDTO {
         private String kindDetail;
 
         @JsonProperty("parkingFree")
-        private String parkingFee;    // 프론트엔드의 parkingFee에 해당
+        private String parkingFree;
 
         @JsonProperty("speed")
-        private String speedAlias;    // Alias for speed if needed
+        private String speed;
 
         @JsonProperty("limitYn")
         private String limitYn;
@@ -115,23 +115,23 @@ public class ChargerApiResponseDTO {
 
         public Charger toEntity() {
             return Charger.builder()
-                .statNm(name)
-                .statId(id)
-                .chgerId(connectorId)
-                .chgerType(connector)
-                .addr(address)
-                .lat(latitude)
-                .lng(longitude)
+                .statNm(statNm)
+                .statId(statId)
+                .chgerId(chgerId)
+                .chgerType(chgerType)
+                .addr(addr)
+                .lat(lat)
+                .lng(lng)
                 .useTime(useTime)
-                .stat(status)
-                .statUpdDt(statusUpdateDate)
-                .output(speed)
+                .stat(stat)
+                .statUpdDt(statUpdDt)
+                .output(output)
                 .method(method)
                 .zcode(zcode)
                 .zscode(zscode)
                 .kind(kind)
                 .kindDetail(kindDetail)
-                .parkingFree(parkingFee)
+                .parkingFree(parkingFree)
                 .limitYn(limitYn)
                 .limitDetail(limitDetail)
                 .build();

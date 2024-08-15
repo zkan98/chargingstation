@@ -22,8 +22,8 @@ public class ChargerDetailResponseDTO {
     private Double lng;
 
     public ChargerDetailResponseDTO(Charger charger) {
-        this.busiNm = charger.getBusinessOwner().getBusiNm();
-        this.busiCall = charger.getBusinessOwner().getBusiCall();
+        this.busiNm = charger.getBusinessOwner().getBusinessName();
+        this.busiCall = charger.getBusinessOwner().getBusinessCall();
         this.statId = charger.getStatId();
         this.statNm = charger.getStatNm();
         this.output = charger.getOutput();
