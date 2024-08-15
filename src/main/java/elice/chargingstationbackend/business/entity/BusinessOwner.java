@@ -30,6 +30,7 @@ public class BusinessOwner extends User {
     @Column(name = "bnm")
     private String businessCorporateName;  // 법인명
 
+
     // OneToMany 관계 설정
     @OneToMany(mappedBy = "businessOwner", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

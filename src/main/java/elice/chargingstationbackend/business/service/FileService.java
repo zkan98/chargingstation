@@ -2,14 +2,15 @@ package elice.chargingstationbackend.business.service;
 
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
-import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 @Service
 public class FileService {
@@ -19,16 +20,17 @@ public class FileService {
 
     private final Storage storage = StorageOptions.getDefaultInstance().getService();
 
-    public String saveFile(MultipartFile file) throws IOException {
-        String fileName = file.getOriginalFilename();
-        BlobId blobId = BlobId.of(bucketName, fileName);
-        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(file.getContentType()).build();
-        Blob blob = storage.create(blobInfo, file.getBytes());
-        return blob.getMediaLink(); // 파일에 접근할 수 있는 URL을 반환합니다.
-    }
-
-    public byte[] getFile(String fileName) {
+    public Resource getFileAsResource(String fileName) {
         Blob blob = storage.get(BlobId.of(bucketName, fileName));
-        return blob.getContent();
+        if (blob == null || !blob.exists()) {
+            throw new RuntimeException("File not found: " + fileName);
+        }
+        InputStream inputStream = new ByteArrayInputStream(blob.getContent());
+        return new InputStreamResource(inputStream) {
+            @Override
+            public String getFilename() {
+                return fileName; // 이 부분에서 파일 이름을 반환하도록 수정합니다.
+            }
+        };
     }
 }
