@@ -3,7 +3,6 @@ package elice.chargingstationbackend.charger.controller;
 import java.util.List;
 
 import elice.chargingstationbackend.charger.dto.*;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,6 +55,20 @@ public class ChargerController {
         ChargerDetailResponseDTO chargerDetail = chargerService.getChagerDetail(statId);
         
         return ResponseEntity.ok().body(chargerDetail);
+    }
+
+    // 사업자별 충전소 조회(토큰생성부분 미완성으로 ownerId를 쿠키로 토큰을 받아오지 못해서 임시로)
+    @GetMapping("/ownerList")
+    // @PreAuthorize("hasAuthority('')")
+    public ResponseEntity<List<ChargerListResponseDTO>> getOwnerChargerList(@RequestParam Long ownerId) {
+        // if(!jwtUtil.validateToken(accessToken)) {
+        //     throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 요청입니다.");
+        // }
+
+        //Long ownerId = jwtUtil.getMemberIdFromToken(accessToken);
+
+        List<ChargerListResponseDTO> ownerChargerList = chargerService.getOwnerChargerList(ownerId);
+        return ResponseEntity.ok().body(ownerChargerList);
     }
 
     // 충전소 추가

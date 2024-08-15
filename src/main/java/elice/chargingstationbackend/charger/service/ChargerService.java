@@ -9,6 +9,9 @@ import elice.chargingstationbackend.business.exception.BusinessOwnerNotFoundExce
 import elice.chargingstationbackend.business.repository.BusinessOwnerRepository;
 import elice.chargingstationbackend.charger.dto.*;
 import elice.chargingstationbackend.charger.repository.ChargerSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -74,6 +77,21 @@ public class ChargerService {
         Charger chargerDetail = chargerRepository.findById(statId)
             .orElseThrow(() -> new ChargerNotFoundException("해당 충전소를 찾을 수 없습니다. 충전소 식별번호 : " + statId));
         return new ChargerDetailResponseDTO(chargerDetail);
+    }
+
+    // 사업자별 충전소 조회
+    public List<ChargerListResponseDTO> getOwnerChargerList(Long ownerId) {
+        List<Charger> ownerChargerPage = chargerRepository.findChargersByOwnerId(ownerId);
+
+        if(ownerChargerPage.isEmpty()) {
+            throw new ChargerNotFoundException("사업자가 등록한 충전소가 없습니다.");
+        }
+
+        List<ChargerListResponseDTO> chargerDtoList = ownerChargerPage.stream()
+                .map(ChargerListResponseDTO::new)
+                .collect(Collectors.toList());
+
+        return chargerDtoList;
     }
 
     // 충전소 추가
