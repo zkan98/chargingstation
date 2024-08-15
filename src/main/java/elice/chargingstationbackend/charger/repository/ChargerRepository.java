@@ -22,4 +22,8 @@ public interface ChargerRepository extends JpaRepository<Charger, String>, JpaSp
     // 충전소 검색(충전소 이름, 장소)
     @Query(value = "SELECT * FROM charger c WHERE c.stat_nm LIKE %:searchTerm% OR c.addr LIKE %:searchTerm% LIMIT 5", nativeQuery = true)
     List<Charger> searchByChargerNameOrAddress(@Param("searchTerm") String searchTerm);
+
+    // 사업자별 충전소 조회
+    @Query("SELECT c FROM Charger c WHERE c.businessOwner.id = :ownerId")
+    List<Charger> findChargersByOwnerId(@Param("ownerId") Long ownerId);
 }

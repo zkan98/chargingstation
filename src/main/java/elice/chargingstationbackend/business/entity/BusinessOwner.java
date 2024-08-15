@@ -36,13 +36,13 @@ public class BusinessOwner {
     @Column(length = 60, nullable = false)
     private String ownerPassword = "defaultPassword";  // Default value
 
-    @Column(name = "busi_id", nullable = false, unique = true)
+    @Column(name = "busi_id", unique = true)
     private String busiId = "defaultBusiId";  // Default value
 
-    @Column(name = "busi_nm", nullable = false)
+    @Column(name = "busi_nm")
     private String busiNm = "defaultBusiNm";  // Default value
 
-    @Column(name = "busi_call", nullable = false)
+    @Column(name = "busi_call")
     private String busiCall = "defaultCall";  // Default value
 
     @Column(name = "bnm")
