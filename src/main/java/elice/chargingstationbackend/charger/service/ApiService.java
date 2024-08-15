@@ -156,7 +156,7 @@ public class ApiService {
                     newOwner.setUsername(item.getBusiNm());
 
                     // 기본적으로 비즈니스 오너 역할을 부여
-                    newOwner.getRoles().add(Role.ROLE_BUSINESS_OWNER);
+                    newOwner.getRoles().add(Role.ROLE_BUSINESS);
 
                     return businessOwnerRepository.save(newOwner);
                 });

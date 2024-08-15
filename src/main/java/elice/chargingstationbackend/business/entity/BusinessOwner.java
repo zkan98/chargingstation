@@ -15,15 +15,12 @@ import java.util.Set;
 @Entity
 public class BusinessOwner extends User {
 
-    @NotNull
     @Column(name = "busi_id", unique = true)
     private String businessId;  // 사업자ID
 
-    @NotNull
     @Column(name = "busi_nm")
     private String businessName;  // 사업자 이름
 
-    @NotNull
     @Column(name = "busi_call")
     private String businessCall;  // 사업자 연락처
 
