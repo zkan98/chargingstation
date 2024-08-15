@@ -3,6 +3,7 @@ package elice.chargingstationbackend.business.service;
 import elice.chargingstationbackend.business.entity.BusinessOwner;
 import elice.chargingstationbackend.business.exception.BusinessOwnerNotFoundException;
 import elice.chargingstationbackend.business.repository.BusinessOwnerRepository;
+import elice.chargingstationbackend.user.Role;
 import elice.chargingstationbackend.user.User;
 import elice.chargingstationbackend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ public class BusinessOwnerService {
     private final UserRepository userRepository;  // User repository 필요
 
     public BusinessOwner registerBusinessOwner(BusinessOwner businessOwner) {
+        // 역할 추가
+        businessOwner.getRoles().add(Role.ROLE_BUSINESS_OWNER);
         // User 엔티티를 저장
         User user = userRepository.save(businessOwner);
         businessOwner.setId(user.getId()); // User ID를 설정

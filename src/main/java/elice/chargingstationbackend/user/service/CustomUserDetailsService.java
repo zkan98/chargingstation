@@ -2,6 +2,7 @@ package elice.chargingstationbackend.user.service;
 
 import elice.chargingstationbackend.user.CustomUser;
 import elice.chargingstationbackend.user.UserRepository;
+import elice.chargingstationbackend.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,29 +19,25 @@ import java.util.List;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
         var result = userRepository.findByEmail(email);
-        if(result.isEmpty()){
+        if (result.isEmpty()) {
             throw new UsernameNotFoundException("이메일을 가진 유저 없음");
         }
-        var user = result.get();    //테이블의 유저
+        var user = result.get();  // 데이터베이스의 유저
 
         List<GrantedAuthority> authorities = new ArrayList<>();
-        if(user.isAdmin()) {
-            authorities.add(new SimpleGrantedAuthority("ADMIN"));
+        // 역할에 따라 권한 설정
+        for (Role role : user.getRoles()) {
+            authorities.add(new SimpleGrantedAuthority(role.name()));
         }
-        else {
-            authorities.add(new SimpleGrantedAuthority("User"));
-        }
-        //                      요 위치가 username , password   ,   권한, 추가된게 닉네임 = username(테이블)
+
+        // CustomUser 객체 생성 (username은 닉네임, email은 실제 이메일)
         CustomUser customUser = new CustomUser(user.getEmail(), user.getPassword(), authorities, user.getUsername());
 
-        return customUser; // 이게 auth 에
+        return customUser;
     }
 }
-//괜히 헷갈리게 됐는데...  기본적으로 중복 불가능의 유저식별 은 이메일, Username 은 닉네임의 역할
-// customUser 의 getUsername 을 하면 이메일이 나오는 것 , getNickname = username 나옴
-
-
