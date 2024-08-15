@@ -1,12 +1,15 @@
 package elice.chargingstationbackend.charger.entity;
 
 import elice.chargingstationbackend.business.entity.BusinessOwner;
+import elice.chargingstationbackend.review.entity.Review;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Entity
 @Builder
@@ -44,6 +47,9 @@ public class Charger {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private BusinessOwner businessOwner;
+
+    @OneToMany(mappedBy = "charger", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> reviews;
 
     @Column(name = "stat")
     private String stat;

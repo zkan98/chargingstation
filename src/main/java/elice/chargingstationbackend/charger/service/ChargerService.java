@@ -53,7 +53,7 @@ public class ChargerService {
         List<Charger> nearByChargerList = chargerRepository.findAll(spec);
 
         return nearByChargerList.stream()
-                .limit(150)
+                .limit(50)
                 .map(ChargerListResponseDTO::new)
                 .collect(Collectors.toList());
     }
