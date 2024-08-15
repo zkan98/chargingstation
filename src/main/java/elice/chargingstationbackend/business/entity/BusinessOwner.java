@@ -16,19 +16,20 @@ import java.util.Set;
 public class BusinessOwner extends User {
 
     @NotNull
-    @Column(name = "busi_id", nullable = false, unique = true)
+    @Column(name = "busi_id", unique = true)
     private String businessId;  // 사업자ID
 
     @NotNull
-    @Column(name = "busi_nm", nullable = false)
+    @Column(name = "busi_nm")
     private String businessName;  // 사업자 이름
 
     @NotNull
-    @Column(name = "busi_call", nullable = false)
+    @Column(name = "busi_call")
     private String businessCall;  // 사업자 연락처
 
     @Column(name = "bnm")
     private String businessCorporateName;  // 법인명
+
 
     // OneToMany 관계 설정
     @OneToMany(mappedBy = "businessOwner", cascade = CascadeType.ALL, orphanRemoval = true)

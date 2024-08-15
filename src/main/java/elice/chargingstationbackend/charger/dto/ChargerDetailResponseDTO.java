@@ -9,25 +9,29 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChargerDetailResponseDTO {
-    private String id;         // statId로 변경
-    private String businessName;  // busiNm으로 변경
-    private String businessCall;  // busiCall로 변경
-    private String name;       // statNm으로 변경
-    private String speed;      // output으로 변경
-    private String address;    // addr으로 변경
-    private String connector;  // chgerType으로 변경
-    private Double fee;        // chargingFee로 변경
-    private String status;     // stat으로 변경
+    private String statId;
+    private String busiNm;
+    private String busiCall;
+    private String statNm;
+    private String output;
+    private String addr;
+    private String chgerType;
+    private Double chargingFee;
+    private String stat;
+    private Double lat;
+    private Double lng;
 
     public ChargerDetailResponseDTO(Charger charger) {
-        this.id = charger.getStatId();
-        this.businessName = charger.getBusinessOwner().getBusinessName();
-        this.businessCall = charger.getBusinessOwner().getBusinessCall();
-        this.name = charger.getStatNm();
-        this.speed = charger.getOutput();
-        this.address = charger.getAddr();
-        this.connector = charger.getChgerType();
-        this.fee = charger.getChargingFee();
-        this.status = charger.getStat();
+        this.busiNm = charger.getBusinessOwner().getBusinessName();
+        this.busiCall = charger.getBusinessOwner().getBusinessCall();
+        this.statId = charger.getStatId();
+        this.statNm = charger.getStatNm();
+        this.output = charger.getOutput();
+        this.addr = charger.getAddr();
+        this.chgerType = charger.getChgerType();
+        this.chargingFee = charger.getChargingFee();
+        this.stat = charger.getStat();
+        this.lat = charger.getLat();
+        this.lng = charger.getLng();
     }
 }

@@ -53,7 +53,7 @@ public class ChargerService {
         List<Charger> nearByChargerList = chargerRepository.findAll(spec);
 
         return nearByChargerList.stream()
-            .limit(150)
+            .limit(50)
             .map(ChargerListResponseDTO::new)
             .collect(Collectors.toList());
     }
@@ -79,17 +79,19 @@ public class ChargerService {
     // 충전소 추가
     @Transactional
     public String addCharger(ChargerRequestDTO chargerRequestDTO) {
+//         BusinessOwner accessOwnerId = businessOwnerRepository.findById(ownerId)
+//                                 .orElseThrow(() -> new BusinessOwnerNotFoundException(ownerId));
+
         // 주소를 위도와 경도로 변환
-        Double[] coordinates = geocodingService.getCoordinates(chargerRequestDTO.getAddress());
+        Double[] coordinates = geocodingService.getCoordinates(chargerRequestDTO.getAddr());
         chargerRequestDTO.setLat(coordinates[0]);
         chargerRequestDTO.setLng(coordinates[1]);
 
-        // UUID로 충전소 ID 생성 (기존 ID가 없을 때만)
-        if (chargerRequestDTO.getId() == null || chargerRequestDTO.getId().isEmpty()) {
-            chargerRequestDTO.setId(UUID.randomUUID().toString());
+
+        if (chargerRequestDTO.getStatId() == null || chargerRequestDTO.getStatId().isEmpty()) {
+            chargerRequestDTO.setStatId(UUID.randomUUID().toString());
         }
 
-        // 새로운 Charger 엔티티 생성
         Charger newCharger = chargerRequestDTO.toEntity();
         chargerRepository.save(newCharger);
 
@@ -103,21 +105,18 @@ public class ChargerService {
             .orElseThrow(() -> new ChargerNotFoundException("해당 충전소를 찾을 수 없습니다. 충전소 식별번호 : " + statId));
 
         // 주소가 변경된 경우에만 위도와 경도를 재계산
-        if (!chargerToUpdate.getAddr().equals(chargerRequestDTO.getAddress())) {
-            Double[] coordinates = geocodingService.getCoordinates(chargerRequestDTO.getAddress());
+        if (!chargerToUpdate.getAddr().equals(chargerRequestDTO.getAddr())) {
+            Double[] coordinates = geocodingService.getCoordinates(chargerRequestDTO.getAddr());
             chargerToUpdate.setLat(coordinates[0]);
             chargerToUpdate.setLng(coordinates[1]);
         }
 
         // 충전소 정보 업데이트
-        chargerToUpdate.setStatNm(chargerRequestDTO.getName());
-        chargerToUpdate.setAddr(chargerRequestDTO.getAddress());
-        chargerToUpdate.setDetailAddr(chargerRequestDTO.getDetailAddress());
-        chargerToUpdate.setChargingFee(chargerRequestDTO.getPrice() != null ? Double.parseDouble(chargerRequestDTO.getPrice()) : null);
-        chargerToUpdate.setSlot(chargerRequestDTO.getSlot() != null ? Integer.parseInt(chargerRequestDTO.getSlot()) : null);
-        chargerToUpdate.setOutput(chargerRequestDTO.getSpeed());
-        chargerToUpdate.setChgerType(chargerRequestDTO.getConnector());
-        chargerToUpdate.setParkingFree(chargerRequestDTO.getParkingFee());
+        chargerToUpdate.setStatNm(chargerRequestDTO.getStatNm());
+        chargerToUpdate.setAddr(chargerRequestDTO.getAddr());
+        chargerToUpdate.setChargingFee(chargerRequestDTO.getChargingFee());
+        chargerToUpdate.setParkingFree(chargerRequestDTO.getParkingFree());
+        chargerToUpdate.setChgerType(chargerRequestDTO.getChgerType());
 
         chargerRepository.save(chargerToUpdate);
     }
