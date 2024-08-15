@@ -45,6 +45,23 @@ public class JwtUtil {
                 .parseSignedClaims(token).getPayload();
         return claims;
     }
+
+
+    public String getEmailFromToken(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return claims.getSubject();
+        } catch (Exception e) {
+            // 토큰 파싱 또는 유효성 검사 실패 시 예외 처리
+            return null;
+        }
+    }
+
 }
 
 //refresh token -> 기존 토큰이 털렸나,
@@ -60,3 +77,5 @@ public class JwtUtil {
 //                .signWith(key)
 //                .compact();
 //    }
+
+
