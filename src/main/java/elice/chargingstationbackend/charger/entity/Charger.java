@@ -48,7 +48,8 @@ public class Charger {
     @JoinColumn(name = "owner_id")
     private BusinessOwner businessOwner;
 
-    @OneToMany(mappedBy = "charger", cascade = CascadeType.ALL, orphanRemoval = true)
+//    cascade = CascadeType.ALL, orphanRemoval = true
+    @OneToMany(mappedBy = "charger")
     private List<Review> reviews;
 
     @Column(name = "stat")
@@ -86,4 +87,7 @@ public class Charger {
 
     @Column(name = "charging_fee")
     private Double chargingFee;
+
+
+
 }

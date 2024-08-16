@@ -1,6 +1,7 @@
 package elice.chargingstationbackend.user;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Email
     @Column(nullable = false, unique = true) // 중복된 이메일 가입 방지
     private String email; // 로그인에 사용되는 이메일
 

@@ -6,6 +6,7 @@ import elice.chargingstationbackend.charger.entity.Charger;
 import elice.chargingstationbackend.charger.repository.ChargerRepository;
 import elice.chargingstationbackend.business.entity.BusinessOwner;
 import elice.chargingstationbackend.business.repository.BusinessOwnerRepository;
+import elice.chargingstationbackend.review.entity.Review;
 import elice.chargingstationbackend.user.Role;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -35,7 +36,7 @@ public class ApiService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    private final String serviceKey = "4TbGmO/+UtIIPXlcDHVVZebt8muT2hdH8BixzgNuBePTYXaH3vbpY1PXhL7rZ1n7VrIR44UCyHU9DSMZLmTcAQ==";
+    private final String serviceKey = "ujQYUsjsfyuEAFHXJUvQfibDKiHR77QD4czLDXiJzOTN6FIGAxAAWkZy/tIVV+/lHv+ily25gDSSGo29/Gq18g==";
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public String fetchChargerData(int pageNo, int numOfRows) throws IOException {
@@ -94,11 +95,12 @@ public class ApiService {
         return response;
     }
 
+
     public void processAndSaveChargers() {
         int pageNo = 1;
-        int numOfRows = 5000;
-        int batchSize = 5000;
-        int maxPages = 500;
+        int numOfRows = 9999;
+        int batchSize = 9999;
+        int maxPages = 1000;
 
         Map<String, BusinessOwner> ownerCache = new HashMap<>();
 
@@ -137,7 +139,6 @@ public class ApiService {
             }
         }
     }
-
     private Charger createOrUpdateCharger(ChargerApiResponseDTO.Item item,
         Map<String, BusinessOwner> ownerCache) {
         // BusinessOwner를 먼저 조회하거나 없으면 새로 생성
@@ -167,5 +168,4 @@ public class ApiService {
 
         return chargerRepository.save(charger); // Charger 엔티티 저장
     }
-
 }
