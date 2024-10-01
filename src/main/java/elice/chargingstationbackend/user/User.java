@@ -1,22 +1,24 @@
 package elice.chargingstationbackend.user;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import elice.chargingstationbackend.business.entity.BusinessOwner;
+import elice.chargingstationbackend.review.entity.Review;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import java.util.HashSet;
-import java.util.Set;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
+
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Inheritance(strategy = InheritanceType.JOINED) // 상속 전략 설정 (JOINED 전략 사용)
+@Inheritance(strategy = InheritanceType.JOINED)
 public class User {
 
     @Id
@@ -24,36 +26,47 @@ public class User {
     private Long id;
 
     @Email
-    @Column(nullable = false, unique = true) // 중복된 이메일 가입 방지
-    private String email; // 로그인에 사용되는 이메일
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
-    private String username; // 사용자 이름 또는 닉네임
+    private String username;
 
     @Column(nullable = true)
-    private String address; // 주소
+    private String address;
 
     @Column(nullable = true)
-    private String phoneNumber; // 전화번호
+    private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
-    private ConnectorType connectorType; // 커넥터 유형
+    private ConnectorType connectorType;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
-    private Set<Role> roles = new HashSet<>(); // 필드를 초기화
+    private Set<Role> roles = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "user-reviews")
+    private List<Review> reviews;
+
+    @Transient
+    private Collection<GrantedAuthority> authorities;
 
     public enum ConnectorType {
         SLOW, DC_COMBO, CHADEMO, AC_THREE_PHASE, TESLA, PORTABLE, WIRELESS
     }
 
-    @Transient
-    private Collection<GrantedAuthority> authorities; // 권한 정보 (Spring Security)
+    public BusinessOwner getBusinessOwner() {
+        if (this instanceof BusinessOwner) {
+            return (BusinessOwner) this;
+        } else {
+            return null;
+        }
+    }
 }

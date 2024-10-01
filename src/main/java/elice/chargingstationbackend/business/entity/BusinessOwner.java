@@ -1,10 +1,9 @@
 package elice.chargingstationbackend.business.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import elice.chargingstationbackend.charger.entity.Charger;
 import elice.chargingstationbackend.user.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,7 +29,7 @@ public class BusinessOwner extends User {
 
     // OneToMany 관계 설정
     @OneToMany(mappedBy = "businessOwner", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonIgnore
     private Set<Charger> chargers;
 
     // 비즈니스 오너의 상세 정보 업데이트 메서드

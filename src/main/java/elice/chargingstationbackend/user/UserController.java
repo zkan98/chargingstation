@@ -5,6 +5,7 @@ import elice.chargingstationbackend.user.service.CustomUserDetailsService;
 import elice.chargingstationbackend.user.service.RefreshTokenService;
 import elice.chargingstationbackend.user.service.UserService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -42,7 +42,6 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserDto userDto) {
         try {
-            // 사용자 타입에 따라 역할 설정
             if ("business".equalsIgnoreCase(userDto.getUserType())) {
                 userDto.setRoles(Collections.singleton(Role.ROLE_BUSINESS));
             } else {
@@ -57,13 +56,14 @@ public class UserController {
         }
     }
 
-
     @GetMapping("/info")
-    public ResponseEntity<UserDto> getUserInfo(@RequestHeader("Authorization") String token) {
-        if (token != null && token.startsWith("Bearer ")) {
-            String jwt = token.substring(7);
+    public ResponseEntity<UserDto> getUserInfo(HttpServletRequest request) {
+        String token = jwtUtil.extractTokenFromRequest(request);
+        if (token != null) {
             try {
-                String email = jwtUtil.getEmailFromToken(jwt);
+                Claims claims = jwtUtil.extractToken(token); // 토큰에서 클레임 추출
+                String email = claims.getSubject();
+
                 if (email != null) {
                     Optional<User> optionalUser = userRepository.findByEmail(email);
                     if (optionalUser.isPresent()) {
@@ -82,6 +82,7 @@ public class UserController {
                     }
                 }
             } catch (Exception e) {
+                System.err.println("사용자 정보 조회 중 오류 발생: " + e.getMessage());
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
         }
@@ -99,12 +100,10 @@ public class UserController {
             Object principal = auth.getPrincipal();
 
             if (principal instanceof CustomUser customUser) {
-
                 User user = userRepository.findByEmail(customUser.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + customUser.getUsername()));
 
-                String accessToken = JwtUtil.createAccessToken(auth);
-
+                String accessToken = jwtUtil.createAccessToken(auth);
                 RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
                 Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken.getToken());
@@ -116,56 +115,46 @@ public class UserController {
                 Map<String, Object> responseData = new HashMap<>();
                 responseData.put("message", "로그인되었습니다.");
                 responseData.put("accessToken", accessToken);
+                responseData.put("email", user.getEmail());
+                responseData.put("username", user.getUsername()); // username 추가
+                responseData.put("role", user.getRoles().stream().findFirst().get().name());
 
                 return ResponseEntity.ok(responseData);
             } else {
                 throw new IllegalArgumentException("Unexpected principal type");
             }
         } catch (UsernameNotFoundException | IllegalArgumentException e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "잘못된 이메일 또는 비밀번호입니다.");
-            return ResponseEntity.badRequest().body(error);
-        }
-    }
-
-    @PostMapping("/token/refresh")
-    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
-        String refreshToken = Arrays.stream(request.getCookies())
-            .filter(cookie -> "refreshToken".equals(cookie.getName()))
-            .findFirst()
-            .map(Cookie::getValue)
-            .orElse(null);
-
-        if (refreshToken == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh Token이 없습니다.");
-        }
-
-        try {
-            Claims claims = JwtUtil.extractToken(refreshToken);
-            String username = claims.get("username", String.class);
-
-            UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-            Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-            String newAccessToken = JwtUtil.createAccessToken(auth);
-
-            Map<String, Object> responseData = new HashMap<>();
-            responseData.put("accessToken", newAccessToken);
-
-            return ResponseEntity.ok(responseData);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 Refresh Token입니다.");
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "잘못된 이메일 또는 비밀번호입니다."));
         }
     }
 
     @PostMapping("/logout")
     @ResponseBody
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        String token = jwtUtil.extractTokenFromRequest(request);
+
+        // 토큰이 없거나 만료된 경우에도 로그아웃 처리
+        try {
+            if (token != null) {
+                jwtUtil.extractToken(token);
+            }
+        } catch (ExpiredJwtException e) {
+            System.out.println("토큰이 만료되었지만 로그아웃을 진행합니다.");
+        } catch (Exception e) {
+            System.err.println("토큰 검증 중 오류 발생: " + e.getMessage());
+            // 다른 오류가 발생한 경우에도 로그아웃을 진행
+        }
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
 
+        return handleLogout(request, response);
+    }
+
+
+    private ResponseEntity<?> handleLogout(HttpServletRequest request, HttpServletResponse response) {
         Cookie refreshTokenCookie = new Cookie("refreshToken", null);
         refreshTokenCookie.setMaxAge(0);
         refreshTokenCookie.setHttpOnly(true);
@@ -183,17 +172,51 @@ public class UserController {
         return ResponseEntity.ok(responseData);
     }
 
+    @PostMapping("/token/refresh")
+    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
+        String refreshToken = refreshTokenService.getRefreshTokenFromRequest(request);
+
+        if (refreshToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("리프레시 토큰이 없습니다.");
+        }
+
+        try {
+            Optional<RefreshToken> refreshTokenOptional = refreshTokenService.findByToken(refreshToken);
+            if (refreshTokenOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 리프레시 토큰입니다.");
+            }
+
+            RefreshToken token = refreshTokenOptional.get();
+            refreshTokenService.verifyExpiration(token);
+
+            User user = token.getUser();
+            Authentication auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+            String newAccessToken = jwtUtil.createAccessToken(auth);
+
+            Map<String, Object> responseData = new HashMap<>();
+            responseData.put("accessToken", newAccessToken);
+
+            return ResponseEntity.ok(responseData);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("리프레시 토큰이 만료되었거나 유효하지 않습니다. 다시 로그인해주세요.");
+        }
+    }
+
     @PutMapping("/mypage/update")
-    public ResponseEntity<UserDto> updateUser(@RequestBody UserDto userDTO, @RequestHeader("Authorization") String token) {
-        if (token != null && token.startsWith("Bearer ")) {
-            String jwt = token.substring(7);
+    public ResponseEntity<UserDto> updateUser(@RequestBody UserDto userDTO, HttpServletRequest request) {
+        String token = jwtUtil.extractTokenFromRequest(request);
+
+        if (token != null) {
             try {
-                String email = jwtUtil.getEmailFromToken(jwt);
+                Claims claims = jwtUtil.extractToken(token);
+                String email = claims.getSubject();
+
                 if (email != null) {
                     User updatedUser = userService.updateUser(email, userDTO);
                     return ResponseEntity.ok(userDTO);
                 }
             } catch (Exception e) {
+                System.err.println("사용자 업데이트 중 오류 발생: " + e.getMessage());
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
             }
         }
@@ -201,16 +224,20 @@ public class UserController {
     }
 
     @DeleteMapping("/mypage/delete")
-    public ResponseEntity<Void> deleteUser(@RequestHeader("Authorization") String token) {
-        if (token != null && token.startsWith("Bearer ")) {
-            String jwt = token.substring(7);
+    public ResponseEntity<Void> deleteUser(HttpServletRequest request) {
+        String token = jwtUtil.extractTokenFromRequest(request);
+
+        if (token != null) {
             try {
-                String email = jwtUtil.getEmailFromToken(jwt);
+                Claims claims = jwtUtil.extractToken(token);
+                String email = claims.getSubject();
+
                 if (email != null) {
                     userService.deleteUser(email);
                     return ResponseEntity.noContent().build();
                 }
             } catch (Exception e) {
+                System.err.println("사용자 삭제 중 오류 발생: " + e.getMessage());
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
         }

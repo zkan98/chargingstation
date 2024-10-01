@@ -23,7 +23,7 @@ public class ChargerListResponseDTO {
 
     public ChargerListResponseDTO(Charger charger) {
         this.statId = charger.getStatId();
-        this.busiNm = charger.getBusinessOwner().getBusinessName();
+        this.busiNm = (charger.getBusinessOwner() != null) ? charger.getBusinessOwner().getBusinessName() : null;
         this.statNm = charger.getStatNm();
         this.addr = charger.getAddr();
         this.chgerType = charger.getChgerType();
@@ -34,4 +34,5 @@ public class ChargerListResponseDTO {
         this.lat = charger.getLat();
         this.lng = charger.getLng();
     }
+
 }

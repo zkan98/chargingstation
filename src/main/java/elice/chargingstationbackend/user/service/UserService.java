@@ -1,11 +1,11 @@
+// UserService.java
 package elice.chargingstationbackend.user.service;
 
-import elice.chargingstationbackend.business.entity.BusinessOwner;
-import elice.chargingstationbackend.business.service.BusinessOwnerService;
 import elice.chargingstationbackend.user.Role;
 import elice.chargingstationbackend.user.User;
 import elice.chargingstationbackend.user.UserDto;
 import elice.chargingstationbackend.user.UserRepository;
+import elice.chargingstationbackend.user.security.JwtUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,7 +29,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
-    private final BusinessOwnerService businessOwnerService;
+    private final JwtUtil jwtUtil;
 
     public boolean existingEmail(String email) {
         return userRepository.findByEmail(email).isPresent();
@@ -47,41 +47,26 @@ public class UserService {
         userRepository.save(adminUser);
     }
 
+    private void setCommonUserFields(User user, UserDto userDto) {
+        user.setEmail(userDto.getEmail());
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        user.setUsername(userDto.getUsername());
+        user.setAddress(userDto.getAddress());
+        user.setPhoneNumber(userDto.getPhoneNumber());
+        user.setConnectorType(userDto.getConnectorType());
+    }
+
     public void createUser(UserDto userDto) {
         if (existingEmail(userDto.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
 
-        // 비즈니스 오너인지 확인
-        if ("business".equalsIgnoreCase(userDto.getUserType())) {
-            BusinessOwner businessOwner = new BusinessOwner();
-            businessOwner.setEmail(userDto.getEmail());
-            businessOwner.setPassword(passwordEncoder.encode(userDto.getPassword()));
-            businessOwner.setUsername(userDto.getUsername());
-            businessOwner.setAddress(userDto.getAddress());
-            businessOwner.setPhoneNumber(userDto.getPhoneNumber());
-            businessOwner.setConnectorType(userDto.getConnectorType());
+        User user = new User();
+        setCommonUserFields(user, userDto);
+        user.setRoles(new HashSet<>(Collections.singletonList(Role.ROLE_USER)));
 
-            businessOwner.setBusinessId(userDto.getBusinessId());
-            businessOwner.setBusinessName(userDto.getBusinessName());
-            businessOwner.setBusinessCall(userDto.getBusinessCall());
-            businessOwner.setBusinessCorporateName(userDto.getBusinessCorporateName());
-
-            businessOwnerService.registerBusinessOwner(businessOwner); // 비즈니스 오너 서비스 호출
-        } else {
-            User user = new User();
-            user.setEmail(userDto.getEmail());
-            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-            user.setUsername(userDto.getUsername());
-            user.setAddress(userDto.getAddress());
-            user.setPhoneNumber(userDto.getPhoneNumber());
-            user.setConnectorType(userDto.getConnectorType());
-            user.setRoles(new HashSet<>(Collections.singletonList(Role.ROLE_USER)));
-
-            userRepository.save(user);
-        }
+        userRepository.save(user);
     }
-
 
     public Authentication authenticate(String email, String password) {
         User user = userRepository.findByEmail(email)
@@ -104,12 +89,7 @@ public class UserService {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        user.setUsername(userDto.getUsername());
-        user.setEmail(userDto.getEmail());
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user.setAddress(userDto.getAddress());
-        user.setPhoneNumber(userDto.getPhoneNumber());
-        user.setConnectorType(userDto.getConnectorType());
+        setCommonUserFields(user, userDto);
         user.getRoles().clear();
         user.getRoles().addAll(userDto.getRoles());
 
@@ -127,6 +107,15 @@ public class UserService {
         return userRepository.findAll().stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
+    }
+
+    public String createAccessToken(User user) {
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+            user.getEmail(),
+            null,
+            user.getAuthorities()
+        );
+        return jwtUtil.createAccessToken(auth);
     }
 
     private UserDto convertToDto(User user) {

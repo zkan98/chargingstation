@@ -1,13 +1,11 @@
 package elice.chargingstationbackend.charger.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import elice.chargingstationbackend.business.entity.BusinessOwner;
 import elice.chargingstationbackend.review.entity.Review;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -45,11 +43,12 @@ public class Charger {
     private String useTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "owner_id", referencedColumnName = "id")
+    @JsonBackReference(value = "owner-chargers")
     private BusinessOwner businessOwner;
 
-//    cascade = CascadeType.ALL, orphanRemoval = true
-    @OneToMany(mappedBy = "charger")
+    @OneToMany(mappedBy = "charger", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "charger-reviews")
     private List<Review> reviews;
 
     @Column(name = "stat")
@@ -87,7 +86,4 @@ public class Charger {
 
     @Column(name = "charging_fee")
     private Double chargingFee;
-
-
-
 }

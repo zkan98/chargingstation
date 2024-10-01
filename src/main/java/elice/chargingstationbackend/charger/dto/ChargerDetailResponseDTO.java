@@ -22,8 +22,8 @@ public class ChargerDetailResponseDTO {
     private Double lng;
 
     public ChargerDetailResponseDTO(Charger charger) {
-        this.busiNm = charger.getBusinessOwner().getBusinessName();
-        this.busiCall = charger.getBusinessOwner().getBusinessCall();
+        this.busiNm = (charger.getBusinessOwner() != null) ? charger.getBusinessOwner().getBusinessName() : null;
+        this.busiCall = (charger.getBusinessOwner() != null) ? charger.getBusinessOwner().getBusinessCall() : null;
         this.statId = charger.getStatId();
         this.statNm = charger.getStatNm();
         this.output = charger.getOutput();
@@ -34,4 +34,5 @@ public class ChargerDetailResponseDTO {
         this.lat = charger.getLat();
         this.lng = charger.getLng();
     }
+
 }

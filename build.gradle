@@ -30,13 +30,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'com.google.cloud:google-cloud-storage:2.1.7'
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
-    implementation 'io.jsonwebtoken:jjwt-gson:0.12.5'
-    implementation 'io.jsonwebtoken:jjwt-impl:0.12.5'
-
-    // JAXB 관련 종속성
-    implementation 'javax.xml.bind:jaxb-api:2.3.1'
-    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.1'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'  // 최신 버전으로 변경
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'  // 최신 버전으로 변경
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'  // Gson 대신 Jackson을 사용합니다.
 
     // JSON 관련 종속성
     implementation 'org.json:json:20210307'
@@ -52,7 +48,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-     
+
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:3.0.2'
 }
 
 tasks.named('test') {

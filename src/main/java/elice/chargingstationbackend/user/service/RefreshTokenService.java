@@ -16,18 +16,18 @@ import java.util.UUID;
 public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
-    private final UserRepository userRepository;
 
     @Transactional
     public RefreshToken createRefreshToken(User user) {
+        refreshTokenRepository.deleteByUser(user);
+
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(user);
         refreshToken.setToken(UUID.randomUUID().toString());
         refreshToken.setExpiryDate(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7)); // 7일 유효기간
-        refreshTokenRepository.deleteByUser(user);
+
         return refreshTokenRepository.save(refreshToken);
     }
-
 
     public Optional<RefreshToken> findByToken(String token) {
         return refreshTokenRepository.findByToken(token);
@@ -42,7 +42,7 @@ public class RefreshTokenService {
     public void verifyExpiration(RefreshToken token) {
         if (token.getExpiryDate().before(new Date())) {
             refreshTokenRepository.delete(token);
-            throw new RuntimeException("Refresh token has expired");
+            throw new RuntimeException("리프레시 토큰이 만료되었습니다.");
         }
     }
 
@@ -57,7 +57,4 @@ public class RefreshTokenService {
         }
         return null;
     }
-
-
-
 }
